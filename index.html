@@ -1,0 +1,3913 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajput Dairy Milk</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+/* CUSTOMER MANAGEMENT UI DESIGN */
+.cust-mgmt-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.cust-search-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+.cust-search-box input {
+  border: none;
+  margin: 0;
+  padding: 10px;
+  background: transparent;
+  width: 100%;
+}
+.cust-stats-row {
+  display: flex;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.cust-filter-row {
+  display: flex;
+  gap: 10px;
+}
+.cust-filter-btn {
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cust-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
+}
+.cust-card.active-selected {
+  background: #738eee;
+  color: #ffffff;
+}
+.cust-card.active-selected .cust-sub, .cust-card.active-selected .cust-code {
+  color: #e8eefe;
+}
+.cust-left-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cust-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #c8e6c9;
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+.cust-name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 3px;
+}
+.cust-sub {
+  font-size: 13px;
+  color: #666666;
+}
+.cust-right-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.cust-code {
+  font-weight: bold;
+  font-size: 16px;
+}
+.cust-dots-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  color: inherit;
+}
+.cust-dropdown {
+  position: absolute;
+  right: 15px;
+  top: 45px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  overflow: hidden;
+}
+.cust-dropdown button {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+.cust-dropdown button:hover {
+  background: #f5f5f5;
+}
+.fab-add-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: white;
+  font-size: 28px;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6f3;color:#202820;font-family:Arial,sans-serif;padding-bottom:120px;}
+header{background:#13864c;color:white;padding:20px 17px;border-radius:0 0 22px 22px;}
+.top{display:flex;justify-content:space-between;align-items:center;}
+.brand{font-size:22px;font-weight:bold;}
+.date{font-size:13px;margin-top:8px;opacity:.9;}
+.shift{display:flex;gap:10px;margin-top:20px;}
+.shift button{flex:1;padding:13px;border:0;border-radius:12px;background:#ffffff25;color:white;font-weight:bold;font-size:15px;cursor:pointer;}
+.shift button.active{background:white;color:#13864c;}
+.container{padding:15px;}
+.tabs{display:flex;gap:8px;margin-bottom:15px;}
+.tabs button{flex:1;border:1px solid #d8e2d9;background:white;padding:11px 5px;border-radius:10px;font-weight:bold;cursor:pointer;}
+.tabs button.active{background:#13864c;color:white;}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.card{background:white;border-radius:15px;padding:17px;box-shadow:0 2px 8px #00000008;margin-bottom:12px;}
+.label{font-size:13px;color:#778078;}
+.value{font-size:24px;font-weight:bold;margin-top:10px;}
+.unit{font-size:12px;color:#778078;margin-top:5px;}
+.section-title{font-size:18px;font-weight:bold;margin:24px 0 13px;}
+.shortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.shortcut{background:white;border:0;border-radius:14px;padding:18px 5px;text-align:center;font-size:13px;font-weight:bold;color:#27372b;cursor:pointer;}
+.icon{font-size:25px;display:block;margin-bottom:10px;}
+.panel{background:white;padding:18px;border-radius:15px;margin-top:15px;}
+input,select{width:100%;padding:13px;border:1px solid #d9e0da;border-radius:9px;margin:7px 0 13px;font-size:15px;background:white;}
+label{font-size:14px;font-weight:bold;}
+.primary{width:100%;background:#13864c;color:white;border:0;padding:14px;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;}
+.secondary{background:#e4f3e9;color:#13864c;border:0;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:white;display:flex;justify-content:space-around;padding:10px 4px;box-shadow:0 -3px 12px #00000012;z-index:1000;}
+.bottom button{flex:1;background:none;border:0;font-size:12px;color:#68736a;cursor:pointer;}
+.bottom button span{display:block;font-size:23px;margin-bottom:4px;}
+.bottom .main{background:#13864c;color:white;border-radius:14px;margin-top:-23px;padding:12px 5px;}
+.hidden{display:none!important;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:10px 5px;border-bottom:1px solid #eee;text-align:left;}
+.empty{color:#788078;text-align:center;padding:20px;}
+
+/* BACK BUTTON STYLE */
+.back-btn {
+  background: #ffffff;
+  border: 1px solid #d9e0da;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #13864c;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 15px 0 10px;
+}
+.page-title-row .section-title {
+  margin: 0;
+}
+
+/* COLLECTION SUB-TABS STYLING */
+.collection-tabs {
+  position: fixed;
+  bottom: 60px;
+  left: 10px;
+  right: 10px;
+  z-index: 999;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  padding: 7px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+.collection-tabs button {
+  padding: 10px 3px;
+  margin: 0;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #333333;
+  border: 1px solid #dddddd;
+  cursor: pointer;
+}
+.collection-tabs button.active {
+  background: #1976d2;
+  color: #ffffff;
+  border-color: #1976d2;
+}
+
+/* RATE LIST SETTINGS DESIGN */
+.rate-card {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.form-group { margin-bottom: 18px; }
+.field-title {
+  display: block; font-size: 15px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px;
+}
+.field-subtext { display: block; font-size: 12px; color: #757575; margin-top: 4px; }
+.rate-header-row {
+  display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 12px;
+}
+.btn-add-slot {
+  background: #66bb6a; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer;
+}
+.radio-group { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+.radio-label { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #333; cursor: pointer; }
+.radio-label input[type="radio"] { width: 18px; height: 18px; margin: 0; accent-color: #2e7d32; }
+.slot-table { border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0; padding: 10px 0; margin-bottom: 25px; }
+.slot-table-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; color: #212121; padding-bottom: 8px; padding-right: 40px; }
+.slot-table-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+.slot-info { display: flex; flex-direction: column; }
+.slot-range { font-size: 14px; font-weight: 600; color: #333; }
+.slot-desc { font-size: 11px; color: #757575; }
+.slot-rate-val { font-size: 14px; font-weight: 600; color: #333; }
+.btn-edit-icon { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px; }
+.action-footer { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.btn-save-main { background: #2e7d32; color: white; border: none; padding: 10px 32px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+/* EDIT SLOT PAGE DESIGN */
+.slot-editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+.slot-editor-header h2 { font-size: 20px; font-weight: bold; margin: 0; color: #1a1a1a; }
+.btn-close-x { background: none; border: none; font-size: 22px; color: #757575; cursor: pointer; }
+.rates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+.unit-input-group { display: flex; align-items: center; border: 1px solid #d9e0da; border-radius: 8px; overflow: hidden; background: #f8f9fa; }
+.unit-input-group input { border: none; margin: 0; padding: 10px; width: 100%; background: transparent; font-weight: bold; }
+.unit-tag { padding: 10px 8px; background: #e9ecef; color: #555; font-size: 13px; border-left: 1px solid #d9e0da; white-space: nowrap; }
+.editor-action-footer { display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px; align-items: center; }
+.btn-cancel-flat { background: none; border: none; color: #555; font-weight: bold; font-size: 14px; cursor: pointer; }
+.btn-ok-flat { background: #4caf50; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
+input:disabled { background-color: #e9ecef !important; color: #6c757d !important; cursor: not-allowed; }
+
+/* Dashboard refresh */
+.dashboard-date,
+.dashboard-count,
+.dashboard-summary {
+  border-radius: 14px;
+  padding: 13px 15px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.dashboard-date {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  color: #387746;
+}
+.dashboard-counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+.dashboard-count {
+  margin: 0;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  color: #28743a;
+}
+.dashboard-count.buyer {
+  background: #e7f2ff;
+  border-color: #bfdbfe;
+  color: #1762a7;
+}
+.dashboard-switch,
+.home-period-tabs {
+  display: grid;
+  gap: 6px;
+  background: #fff;
+  padding: 8px;
+}
+.dashboard-switch {
+  grid-template-columns: 1fr 1fr;
+  border-radius: 16px 16px 0 0;
+}
+.dashboard-switch button,
+.home-period-tabs button {
+  border: 0;
+  background: transparent;
+  color: #68736a;
+  border-radius: 12px;
+  padding: 12px 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.dashboard-switch button.active {
+  background: #287d36;
+  color: #fff;
+  box-shadow: 0 3px 8px #0002;
+}
+.home-period-tabs {
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #dce8dd;
+}
+.home-period-tabs button.active {
+  color: #287d36;
+  border-bottom: 3px solid #287d36;
+  border-radius: 0;
+}
+.dashboard-stats {
+  background: #fff;
+  border-radius: 0 0 18px 18px;
+  padding: 8px 14px 14px;
+  box-shadow: 0 5px 18px #0000000d;
+}
+.dashboard-stats .stats {
+  gap: 0;
+}
+.dashboard-stats .card {
+  text-align: center;
+  box-shadow: none;
+  border-radius: 0;
+  border-bottom: 1px solid #e8e8e8;
+  margin: 0;
+  padding: 15px 5px;
+}
+.dashboard-stats .value {
+  font-size: 23px;
+  margin-top: 4px;
+}
+.dashboard-stats .unit {
+  margin-top: 5px;
+}
+.dashboard-samples {
+  text-align: center;
+  color: #68736a;
+  border-top: 1px dashed #ddd;
+  margin-top: 4px;
+  padding-top: 12px;
+  font-size: 14px;
+}
+.dashboard-shortcuts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.dashboard-shortcuts .shortcut {
+  min-height: 92px;
+  box-shadow: 0 2px 9px #0000000b;
+}
+.dashboard-add-milk {
+  margin-top: 14px;
+  min-height: 54px;
+  box-shadow: 0 4px 10px #13864c30;
+}
+
+.report-month-picker {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.report-month-picker button,
+.report-month-picker input {
+  margin: 0;
+  text-align: center;
+}
+.report-choice-row {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  margin: 14px 0 20px;
+}
+.report-choice-row label,
+.report-option label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: normal;
+  cursor: pointer;
+}
+.report-choice-row input,
+.report-option input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #4caf50;
+}
+.report-option {
+  padding: 14px 4px;
+  border-bottom: 1px solid #ddd;
+}
+.report-download {
+  display: block;
+  width: auto;
+  margin: 24px auto 10px;
+  padding: 14px 18px;
+  background: #4caf50;
+  color: #fff;
+  border: 0;
+  border-radius: 7px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.report-output {
+  overflow-x: auto;
+  background: #fff;
+  color: #222;
+}
+.report-output table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 18px;
+}
+.report-output th,
+.report-output td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+.report-output h3 {
+  color: #13864c;
+  margin: 20px 0 8px;
+}
+/* PDF report page-break fix */
+.report-output {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.report-output table {
+  width: 100%;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.report-output tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.report-output h3 {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+@media (max-width: 380px) {
+  .dashboard-stats .value {
+    font-size: 19px;
+  }
+  .dashboard-shortcuts .shortcut {
+    font-size: 12px;
+  }
+}
+</style>
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+<style>
+
+/* Milk Collection date control styled like the compact reference date bar */
+.milk-date-nav{display:flex;align-items:center;gap:7px;width:100%;margin:4px 0 12px}
+.milk-date-nav>button{flex:0 0 38px;height:38px;padding:0;border:1px solid #d8ded9;border-radius:7px;background:#f4f5f4;color:#333;font-size:25px;line-height:1}
+.milk-date-display{position:relative;display:flex;align-items:center;justify-content:center;flex:1;min-width:0;height:38px;margin:0;border:1px solid #d8ded9;border-radius:7px;background:#fff;color:#454545;font-size:14px;font-weight:500;letter-spacing:.1px}
+.milk-date-display input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+
+/* Collection Summary page */
+.milk-title-row{gap:8px;align-items:center}
+.milk-title-row .section-title{flex:1;min-width:0}
+.cs-open-btn{flex:0 0 auto;background:#fff;color:#13864c;border:2px solid #13864c;border-radius:10px;padding:9px 10px;font-size:clamp(11px,3vw,14px);font-weight:700;line-height:1.2;max-width:116px;white-space:normal}
+.cs-panel{padding:14px;border-top:4px solid #13864c}
+.cs-panel input[type=date]{width:100%;font-size:16px;font-weight:bold}
+.cs-shift-row,.cs-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.cs-shift-row button,.cs-actions button{flex:1;min-width:0;padding:11px 5px;font-size:13px}
+.cs-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.cs-total-card{background:#f2f4f2;border-radius:10px;padding:10px;text-align:center;min-width:0}
+.cs-total-card strong{display:block;font-size:18px;color:#13864c}
+.cs-table-wrap{width:100%;overflow:hidden}
+.cs-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:clamp(10px,2.8vw,13px);color:#222}
+.cs-table th{background:#70b65a;color:#fff;padding:7px 1px;white-space:nowrap;font-size:clamp(9px,2.35vw,11px)}
+.cs-table td{padding:6px 1px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(9px,2.35vw,11px)}
+.cs-table th:first-child,.cs-table td:first-child{width:25%;text-align:left;padding-left:4px}.cs-table th:not(:first-child),.cs-table td:not(:first-child){width:15%}.cs-amt-cell{position:relative}.cs-row-actions{display:none;gap:3px;justify-content:center}.cs-row-actions button{border:0;border-radius:4px;padding:3px 4px;font-size:9px;color:#fff;background:#27834b}.cs-row-actions button:last-child{background:#c62828}.cs-swipe-row.cs-swiped .cs-amt{display:none}.cs-swipe-row.cs-swiped .cs-row-actions{display:flex}
+.cs-table tbody tr:nth-child(odd){background:#fff}
+.cs-table tbody tr:nth-child(even){background:#e9e9e9}
+.cs-table tfoot{background:#d4d4d4;font-weight:700}
+@media(max-width:380px){.milk-title-row .back-btn{padding:8px;font-size:12px}.cs-open-btn{max-width:100px;padding:8px 6px}.cs-table th,.cs-table td{padding-left:1px;padding-right:1px}}
+
+
+/* Final mobile app layout: vertical scrolling only */
+html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y}
+*,*::before,*::after{box-sizing:border-box;min-width:0}
+main,.container,section,.panel{max-width:100%;overflow-x:clip}
+img,table,input,select,textarea,button{max-width:100%}
+.cs-panel{padding:8px;border-radius:14px}
+.cs-panel>label[for="csDate"]{display:none}
+.cs-panel input[type=date]{display:block;width:min(100%,190px);height:38px;margin:0 auto 8px;padding:5px 8px;font-size:13px}
+.cs-shift-row{gap:5px;margin:7px 0}
+.cs-shift-row button{padding:7px 3px;font-size:11px}
+.cs-totals{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;margin:8px 0}
+.cs-total-card{padding:6px 1px;border:1px solid #dce5e1;border-radius:8px;background:#f8fbf9;overflow:hidden}
+.cs-total-card span{display:block;font-size:clamp(7px,2vw,10px);line-height:1.1;color:#45564d;white-space:nowrap}
+.cs-total-card strong{display:block;font-size:clamp(9px,2.6vw,13px);line-height:1.25;color:#13864c;white-space:nowrap}
+.cs-table-wrap{overflow:hidden;width:100%;border:1px solid #dce5e1;border-radius:10px}
+.cs-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:clamp(9px,2.7vw,12px)}
+.cs-table th{background:#078b3e;color:#fff;padding:8px 1px;font-size:clamp(9px,2.5vw,12px)}
+.cs-table td{padding:8px 1px;font-size:clamp(9px,2.45vw,11px)}
+.cs-table th:first-child,.cs-table td:first-child{width:27%;padding-left:4px}
+.cs-table th:not(:first-child),.cs-table td:not(:first-child){width:14.6%}
+.cs-table tbody tr{height:38px;border-bottom:1px solid #e0e5e2}
+.cs-row-actions button{font-size:9px;padding:4px 3px}
+.cs-actions{gap:5px;margin:9px 0}
+.cs-actions button{padding:9px 2px;font-size:clamp(9px,2.6vw,12px)}
+header .top{min-height:72px}
+header .top .brand{white-space:normal!important;line-height:1.15}
+@media(max-width:360px){.cs-total-card span{font-size:7px}.cs-total-card strong{font-size:9px}.cs-table th,.cs-table td{font-size:8px}}
+
+</style>
+</head>
+<body>
+       
+<header>
+  <div class="top" style="display:flex;justify-content:space-between;align-items:center;padding:10px 15px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button onclick="show('home')" style="background:none;border:0;color:white;font-size:22px;">☰</button>
+      <svg class="dairy-cow-logo" viewBox="0 0 64 64" aria-label="Cow logo" role="img" style="width:48px;height:48px;flex:0 0 48px;fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round"><path d="M18 17 8 9 7 22l9 5M46 17l10-8 1 13-9 5M19 20c-7 5-9 13-7 22 2 10 10 16 20 16s18-6 20-16c2-9 0-17-7-22-8-6-18-6-26 0Z"/><path d="M24 9c-2-5-7-6-11-4M40 9c2-5 7-6 11-4M24 31h1m14 0h1M25 43c4 4 10 4 14 0M32 38v3"/></svg><div class="brand" id="headerDairyName" style="font-size:18px;font-weight:bold;white-space:nowrap;">Rajput Dairy Milk</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button onclick="location.reload()" style="background:none;border:0;color:white;font-size:20px;">🔄</button>
+      <button onclick="show('settings')" style="background:none;border:0;color:white;font-size:20px;">⚙️</button>
+    </div>
+  </div>
+
+  <div style="display:none;">
+    <div class="date" id="today"></div>
+    <div class="shift">
+      <button id="morning" class="active">Morning</button>
+      <button id="evening">Evening</button>
+    </div>
+  </div>
+</header>
+
+
+  <main class="container">
+    <section id="home">
+      <div class="dashboard-date" id="dashboardDate"></div>
+      <div class="dashboard-counts">
+        <div class="dashboard-count">
+          <span id="dashboardSellerCount">0</span> Active Seller
+        </div>
+        <div class="dashboard-count buyer">
+          <span id="dashboardBuyerCount">0</span> Active Buyer
+        </div>
+      </div>
+  
+    
+    </div>
+
+    <div class="dashboard-switch">
+      <button id="collectionModeBtn" class="active" type="button" onclick="setDashboardMode('Collection', this)">Collection</button>
+      <button id="distributionModeBtn" type="button" onclick="setDashboardMode('Distribution', this)">Distribution</button>
+    </div>
+
+    <div class="home-period-tabs">
+      <button class="active" type="button" onclick="setPeriod('Total', this)">Total</button>
+      <button type="button" onclick="setPeriod('Morning', this)">Morning</button>
+      <button type="button" onclick="setPeriod('Evening', this)">Evening</button>
+    </div>
+
+    <div class="dashboard-stats">
+      <div class="stats">
+        <div class="card">
+          <div class="label">Total Milk</div>
+          <div class="value" id="litres">0.0</div>
+          <div class="unit">Litres</div>
+        </div>
+        <div class="card">
+          <div class="label">Average FAT</div>
+          <div class="value" id="fat">0.00</div>
+          <div class="unit">Fat percentage</div>
+        </div>
+        <div class="card">
+          <div class="label">Average Rate</div>
+          <div class="value" id="rate">₹ 0</div>
+          <div class="unit">Per litre</div>
+        </div>
+        <div class="card">
+          <div class="label">Total Amount</div>
+          <div class="value" id="amount">₹ 0</div>
+          <div class="unit">Milk amount</div>
+        </div>
+        <div class="card">
+          <div class="label">Average CLR</div>
+          <div class="value" id="clr">0.00</div>
+          <div class="unit">CLR value</div>
+        </div>
+        <div class="card">
+          <div class="label">Average SNF</div>
+          <div class="value" id="snf">0.00</div>
+          <div class="unit">SNF percentage</div>
+        </div>
+      </div>
+      <div class="dashboard-samples" id="dashboardSamples">0 Cow + 0 Buffalo = 0 Sample(s)</div>
+    </div>
+
+    <div class="section-title">Quick Access</div>
+    <div class="shortcuts dashboard-shortcuts">
+      <button class="shortcut" type="button" onclick="show('customers')"><span class="icon">👥</span>Customers</button>
+      <button class="shortcut" type="button" onclick="show('advance')"><span class="icon">💰</span>Advance</button>
+      <button class="shortcut" type="button" onclick="openCollectionTab('milkCollection')"><span class="icon">🥛</span>Collection</button>
+      <button class="shortcut" type="button" onclick="show('bill')"><span class="icon">📄</span>Bill</button>
+      <button class="shortcut" type="button" onclick="show('reports')"><span class="icon">📊</span>Reports</button>
+      <button class="shortcut" type="button" onclick="openLeaderRateChanger()"><span class="icon">🔄</span>Leaders Rate Changer</button>
+    </div>
+
+    <button class="primary dashboard-add-milk" type="button" onclick="openCollectionTab('milkCollection')">🥛 Add Milk Entry</button>
+
+    <div class="panel">
+      <div class="section-title" style="margin-top:0">Recent Milk Entries</div>
+      <div id="recent" class="empty">Milk Entry</div>
+    </div>
+  </section>
+
+  <section id="customers" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Customer Management</div>
+    </div>
+    <div class="cust-mgmt-top">
+      <div class="cust-search-box">
+        <span>🔍</span>
+        <input id="customerSearch" placeholder="Search" oninput="renderCustomers()">
+      </div>
+      <div class="cust-stats-row">
+        <span>Active: <span id="activeCount">0</span></span>
+        <span>In-Active: <span id="inactiveCount">0</span></span>
+      </div>
+      <div class="cust-filter-row">
+        <button type="button" class="cust-filter-btn">FILTER</button>
+        <select id="custSort" class="cust-filter-btn" style="flex:1;margin:0" onchange="renderCustomers()">
+          <option value="asc">Name Ascending</option>
+          <option value="desc">Name Descending</option>
+        </select>
+      </div>
+    </div>
+    <div id="customerList"></div>
+    <button type="button" class="fab-add-btn" onclick="openAddCustomerModal()">+</button>
+
+    <div id="customerFormPanel" class="panel hidden" style="margin-top:20px;border-top:4px solid #13864c">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 id="custFormTitle" style="margin:0">Add New Customer</h3>
+        <button type="button" onclick="closeCustomerForm()" style="background:none;border:none;font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <label>Customer Is</label>
+      <select id="customerType"><option>Seller</option><option>Buyer</option></select>
+      <label>Cattle Type</label>
+      <select id="cattle"><option>Buffalo</option><option>Cow</option></select>
+      <label>Mobile Number</label>
+      <input id="mobile" type="tel" placeholder="Mobile number">
+      <label>Customer Name</label>
+      <input id="cname" placeholder="Customer name">
+      <label>Customer Code</label>
+      <input id="ccode" placeholder="Customer code">
+      <label>Personal Rate (₹ per litre)</label>
+      <input id="personalRate" type="number" min="0" step="0.01" placeholder="Optional personal rate">
+      <button id="saveCustBtn" class="primary" onclick="saveCustomer()">Save Customer</button>
+      <button class="secondary" onclick="closeCustomerForm()" style="width:100%;margin-top:8px">Cancel</button>
+    </div>
+  </section>
+
+  <section id="collection" class="hidden">
+    <section id="milkCollection">
+      <div class="page-title-row milk-title-row">
+        <button class="back-btn" onclick="show('home')">❮ Back</button>
+        <div class="section-title">Milk Collection</div>
+        <button type="button" class="cs-open-btn" onclick="openCollectionTab('collectionSummary')">Collection Summary</button>
+      </div>
+      <div class="panel" style="padding:14px;border-top:4px solid #13864c">
+        <label>Date</label>
+        <div class="milk-date-nav">
+          <button type="button" aria-label="Previous date" onclick="changeMilkDate(-1)">‹</button>
+          <label class="milk-date-display" for="milkDate"><span id="milkDateLabel">21 November, 2026</span><input id="milkDate" type="date" onchange="updateMilkDateLabel()" aria-label="Choose milk collection date"></label>
+          <button type="button" aria-label="Next date" onclick="changeMilkDate(1)">›</button>
+        </div>
+        <div style="display:flex;gap:10px;margin:10px 0">
+          <button type="button" id="morningBtn" onclick="setMilkShift('Morning')" style="flex:1;padding:12px;border:0;border-radius:10px;background:#13864c;color:white;font-weight:bold">Morning</button>
+          <button type="button" id="eveningBtn" onclick="setMilkShift('Evening')" style="flex:1;padding:12px;border:1px solid #13864c;border-radius:10px;background:white;color:#13864c;font-weight:bold">Evening</button>
+        </div>
+        <select id="milkShift" style="display:none">
+          <option>Morning</option>
+          <option>Evening</option>
+        </select>
+        <label>Customer / Code</label>
+        <select id="milkCustomer" onchange="calculateMilkRates()"></select>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <div>
+            <label>Liter</label>
+            <input id="milkQty" type="number" min="0" step="0.01" placeholder="0.00" oninput="calculateMilkRates()">
+          </div>
+          <div>
+            <label>Fat</label>
+            <input id="milkFat" type="number" min="0" step="0.1" placeholder="0.0" oninput="calculateMilkRates()">
+          </div>
+          <div>
+            <label id="milkQualityLabel">CLR</label>
+            <input id="milkClr" type="number" min="0" step="0.1" placeholder="0.0" oninput="calculateMilkRates()">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px">
+          <div>
+            <label>Rate ₹</label>
+            <input id="milkRate" type="number" min="0" step="0.01" placeholder="Rate" oninput="calculateMilkRates()">
+          </div>
+          <div>
+            <label id="milkSnfLabel">SNF</label>
+            <input id="milkSnf" type="number" readonly placeholder="SNF">
+          </div>
+          <div>
+            <label>Total ₹</label>
+            <input id="milkTotal" type="number" readonly placeholder="Total">
+          </div>
+        </div>
+        <button class="primary" onclick="saveMilk()" style="width:100%;margin-top:10px">Save Entry</button>
+        <button class="secondary" onclick="resetMilkForm()" style="width:100%;margin-top:10px">Add New Entry</button>
+        <div class="section-title">Saved Milk Entries</div>
+        <div id="milkEntryList"></div>
+      </div>
+    </section>
+
+    <section id="totalCollection" class="hidden">
+      <div class="page-title-row">
+        <button class="back-btn" onclick="show('home')">❮ Back</button>
+        <div class="section-title">Total Collection</div>
+      </div>
+      <div class="card">
+        <label>From Date</label>
+        <input type="date" id="totalFromDate">
+        <label>To Date</label>
+        <input type="date" id="totalToDate">
+        <button class="primary" onclick="showTotalCollection()" style="margin-top:8px">Show Collection</button>
+      </div>
+      <div class="card" id="totalCollectionPrintArea">
+        <h3>Milk Collection Report</h3>
+        <div id="totalMilkReport" style="margin-top:10px;"></div>
+        <h3>Amount Report</h3>
+        <div id="totalAmountReport" style="margin-top:10px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:15px;">
+          <button class="secondary" type="button" onclick="show('collection')">Back</button>
+          <button class="secondary" type="button" onclick="downloadTotalCollectionPDF()">Download PDF</button>
+          <button class="primary" type="button" onclick="printTotalCollection()">Print</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="collectionSummary" class="hidden">
+      <div class="page-title-row">
+        <button class="back-btn" onclick="openCollectionTab('milkCollection')">❮ Back</button>
+        <div class="section-title">Collection Summary</div>
+      </div>
+      <div class="panel cs-panel">
+        <label for="csDate">Date</label>
+        <input type="date" id="csDate" onchange="renderCollectionSummary()">
+        <div class="cs-shift-row">
+          <button type="button" id="csAllBtn" class="primary" onclick="setCsShift('All')">All</button>
+          <button type="button" id="csMorningBtn" class="secondary" onclick="setCsShift('Morning')">AM / Morning</button>
+          <button type="button" id="csEveningBtn" class="secondary" onclick="setCsShift('Evening')">PM / Evening</button>
+        </div>
+        <div id="csTotals" class="cs-totals"></div>
+        <div id="csSummaryResult" class="cs-table-wrap"></div>
+        <div class="cs-actions">
+          <button type="button" class="secondary" onclick="runCsExport('download')">⬇ Download PDF</button>
+          <button type="button" class="secondary" onclick="runCsExport('print')">🖨 Print</button>
+          <button type="button" class="primary" onclick="runCsExport('share')">↗ Share PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="customerMilk" class="hidden">
+      <div class="page-title-row">
+        <button class="back-btn" onclick="show('home')">❮ Back</button>
+        <div class="section-title">Customer Milk</div>
+      </div>
+      <div class="panel" style="padding:10px;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input id="cmCodeSearch" type="text" placeholder="Customer Code" style="flex:1;margin:0;background:white;" oninput="onCustCodeInput()">
+          <select id="cmCustomerSelect" style="flex:2;margin:0;background:white;" onchange="renderCustomerMilkData()"></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <label style="flex:1;">From
+            <input type="date" id="cmFromDate" onchange="renderCustomerMilkData()">
+          </label>
+          <label style="flex:1;">To
+            <input type="date" id="cmToDate" onchange="renderCustomerMilkData()">
+          </label>
+        </div>
+        <div class="card" style="padding:12px;">
+          <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">Today's Milk</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button type="button" id="cmMorningBtn" onclick="setCmShift('Morning')">Morning</button>
+            <button type="button" id="cmEveningBtn" onclick="setCmShift('Evening')">Evening</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cattle</th><th>Liter</th><th>Fat</th><th>CLR</th><th>Rate</th><th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="cmTodayTableBody">
+                <tr><td colspan="6" class="empty">No data available to display!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="padding:12px;">
+          <h3>Milk Total</h3>
+          <div>Total Milk: <strong id="cmTotalMilk">0.00</strong></div>
+          <div>Total Amount: <strong id="cmTotalAmount">₹ 0.00</strong></div>
+          <div>Avg. Milk: <strong id="cmAvgMilk">0.00</strong></div>
+          <div>Avg. Amount: <strong id="cmAvgAmount">₹ 0.00</strong></div>
+          <div>Avg. Rate: <strong id="cmAvgRate">₹ 0.00</strong></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button type="button" class="primary" onclick="downloadCustomerMilkPDF()" style="flex:1;">📥 Download PDF</button>
+            <button type="button" class="secondary" onclick="shareCustomerMilkPDF()" style="flex:1;">📤 Share PDF</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="collection-tabs">
+      <button onclick="openCollectionTab('milkCollection', this)" class="active">Milk Collection</button>
+      <button onclick="openCollectionTab('totalCollection', this)">Total Collection</button>
+      <button onclick="openCollectionTab('collectionSummary', this)">Collection Summary</button>
+      <button onclick="openCollectionTab('customerMilk', this)">Customer Milk</button>
+    </div>
+  </section>
+
+  <section id="bill" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Customer Bill</div>
+    </div>
+    <div class="panel">
+      <label>Customer</label>
+      <select id="billCustomer"></select>
+      <label>From Date</label>
+<input id="billFrom" type="date">
+<select id="billFromShift">
+  <option value="Morning">Morning</option>
+  <option value="Evening">Evening</option>
+</select>
+
+<label>To Date</label>
+<input id="billTo" type="date">
+<select id="billToShift">
+  <option value="Morning">Morning</option>
+  <option value="Evening" selected>Evening</option>
+</select>
+      <button class="primary" onclick="makeBill()">Show Bill</button>
+      <div id="billResult"></div>
+    </div>
+  </section>
+
+  <section id="reports" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Generate Dairy Reports</div>
+    </div>
+
+    <div class="panel">
+      <div class="report-month-picker">
+        <button class="secondary" type="button" onclick="changeReportMonth(-1)">❮</button>
+        <input id="reportMonth" type="month">
+        <button class="secondary" type="button" onclick="changeReportMonth(1)">❯</button>
+      </div>
+
+      <strong>Report Of?</strong>
+      <div class="report-choice-row">
+        <label>
+          <input type="radio" name="reportScope" value="Dairy" onchange="toggleReportCustomer()"> Dairy
+        </label>
+        <label>
+          <input type="radio" name="reportScope" value="Customer" checked onchange="toggleReportCustomer()"> Customer
+        </label>
+      </div>
+
+      <div id="reportCustomerWrap" class="hidden">
+        <label for="reportCustomer">Customer</label>
+        <select id="reportCustomer"></select>
+      </div>
+
+      <div class="report-option">
+        <label><input type="checkbox" name="reportSection" value="bill" checked> Bill</label>
+      </div>
+      <div class="report-option">
+        <label><input type="checkbox" name="reportSection" value="milk" checked> Milk Detail</label>
+      </div>
+      <div class="report-option">
+        <label><input type="checkbox" name="reportSection" value="payment" checked> Payment Statement</label>
+      </div>
+      
+      <div class="report-option">
+        <label><input type="checkbox" name="reportSection" value="advance" checked> Advance Payment</label>
+      </div>
+
+      <button class="report-download" type="button" onclick="makeReport()">DOWNLOAD REPORT</button>
+      <div id="reportResult"></div>
+    </div>
+  </section>
+
+  <section id="advance" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Advance Payment</div>
+    </div>
+    <div class="panel">
+      <label>Search</label>
+      <input id="advanceSearch" placeholder="Search code or customer..." oninput="renderAdvances()">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="secondary" onclick="changeAdvanceMonth(-1)">◀️</button>
+        <input id="advanceMonth" type="month" style="margin-top:7px">
+        <button class="secondary" onclick="changeAdvanceMonth(1)">▶️</button>
+      </div>
+      <button class="primary" onclick="openAdvanceForm()" style="margin:10px 0">PAY / RECEIVE</button>
+      <div style="display:flex;gap:8px">
+        <select id="advancePartyFilter" onchange="renderAdvances()">
+          <option value="All">SELLER + BUYER</option>
+          <option value="Seller">SELLER</option>
+          <option value="Buyer">BUYER</option>
+        </select>
+        <select id="advanceKindFilter" onchange="renderAdvances()">
+          <option value="All">PAID + RECEIVED</option>
+          <option value="Pay">PAID</option>
+          <option value="Receive">RECEIVED</option>
+        </select>
+      </div>
+      <div id="advanceList"></div>
+    </div>
+  </section>
+
+  <section id="advanceForm" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('advance')">❮ Back</button>
+      <div class="section-title">PAY / RECEIVE</div>
+    </div>
+    <div class="panel">
+      <label>Date</label>
+      <input type="date" id="advanceDate">
+      <label>Payment Type</label>
+      <div style="display:flex;gap:10px;margin:8px 0 18px">
+        <button id="advancePayBtn" class="primary" onclick="setAdvanceType('Pay')">PAY</button>
+        <button id="advanceReceiveBtn" class="secondary" onclick="setAdvanceType('Receive')">RECEIVE</button>
+      </div>
+      <label>Customer Name / Code</label>
+      <input id="advanceCode" list="advanceCustomerOptions" placeholder="Search customer name or code" oninput="findAdvanceCustomer()" autocomplete="off">
+      <datalist id="advanceCustomerOptions"></datalist>
+      <label>Customer Name</label>
+      <input id="advanceName" readonly placeholder="Customer name">
+      <label>Customer Type</label>
+      <input id="advanceCustomerType" readonly placeholder="Seller / Buyer">
+      <label>Amount (₹)</label>
+      <input id="advanceAmount" type="number" min="0.01" step="0.01" placeholder="Enter amount">
+      <label>Remark</label>
+      <input id="advanceRemark" placeholder="Enter remark">
+      <button class="primary" onclick="saveAdvance()">SAVE</button>
+      <button class="secondary" onclick="show('advance')" style="width:100%;margin-top:10px">CANCEL</button>
+    </div>
+  </section>
+
+  <section id="leaderRateChanger" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" type="button" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Leaders Rate Changer</div>
+    </div>
+    <div class="panel" style="padding:15px;border-top:4px solid #13864c">
+      <label>Customer</label>
+      <select id="leaderRateCustomer" onchange="resetLeaderRatePreview()"></select>
+      <button type="button" class="primary" style="width:100%;margin-top:10px" onclick="openLeaderCustomerRateList()">💲 Open Customer Rate List</button>
+      <div style="margin-top:18px;font-weight:bold;color:#13864c">Select Update Period</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+        <div><label for="leaderRateFrom">From Date</label><input id="leaderRateFrom" type="date" onchange="resetLeaderRatePreview()"></div>
+        <div><label for="leaderRateTo">To Date</label><input id="leaderRateTo" type="date" onchange="resetLeaderRatePreview()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+        <div><label for="leaderRateFromShift">From Shift</label>
+          <select id="leaderRateFromShift" onchange="resetLeaderRatePreview()"><option value="Morning">Morning</option><option value="Evening">Evening</option></select>
+        </div>
+        <div><label for="leaderRateToShift">To Shift</label>
+          <select id="leaderRateToShift" onchange="resetLeaderRatePreview()"><option value="Morning">Morning</option><option value="Evening" selected>Evening</option></select>
+        </div>
+      </div>
+      <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="previewLeaderRateUpdate()">Preview Updated Bill</button>
+    </div>
+    <div id="leaderRateBillResult" style="margin-top:14px"></div>
+    <div id="leaderRateConfirmation" class="panel hidden" style="margin-top:14px;padding:15px;border:1px solid #e0a800;border-top:4px solid #e0a800">
+      <div style="font-size:17px;font-weight:bold;margin-bottom:8px">Rate Revision Confirmation</div>
+      <p id="leaderRateConfirmationText" style="font-size:14px;line-height:1.5;color:#555">Updated bill review karne ke baad batayein ki purani entries rakhni hain ya naya rate apply karna hai.</p>
+      <button type="button" class="secondary" style="width:100%;margin-bottom:9px" onclick="keepLeaderPreviousEntries()">Keep Previous Entries</button>
+      <button type="button" class="primary" style="width:100%;background:#13864c" onclick="applyLeaderUpdatedRate()">Apply Updated Rate</button>
+    </div>
+  </section>
+
+  <section id="settings" class="hidden">
+    <div class="page-title-row">
+      <button class="back-btn" onclick="show('home')">❮ Back</button>
+      <div class="section-title">Settings</div>
+    </div>
+    <div class="panel">
+      <label>Dairy Name</label>
+      <input id="dairyName" value="Rajput Dairy Milk">
+      <label>Default Milk Rate (₹ per litre)</label>
+      <input id="defaultRate" type="number" min="0" value="60">
+      <button class="primary" onclick="saveSettings()">Save Settings</button>
+      <div class="section-title">Data Backup</div>
+      <button class="secondary" onclick="backup()">Download Backup</button>
+      <br><br>
+      <label>Restore Backup</label>
+      <input type="file" id="restoreFile" accept=".json">
+      <button class="secondary" onclick="restore()">Restore Backup</button>
+    </div>
+    <div class="panel">
+      <div class="section-title">Rate List Settings</div>
+      <button class="primary" onclick="show('rateSettings')">Open Rate List</button>
+    </div>
+    <button class="secondary" onclick="dairyLogout()">Logout</button>
+  </section>
+
+  <section id="rateSettings" class="hidden">
+    <div class="rate-card">
+      <div class="page-title-row" style="margin-top:0;">
+        <button class="back-btn" id="rateSettingsBackBtn" onclick="handleRateBack()">❮ Back</button>
+        <span id="rateSettingsTitle" style="font-weight:bold; font-size:16px; margin-left:10px; color:#13864c;"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="field-title">How to set up rate chart?</label>
+        <select id="rateChartSetup">
+          <option value="General">General</option>
+          <option value="Separate">Separate (Cow & Buffalo)</option>
+        </select>
+        <small class="field-subtext">Set one rate list/chart for cow and buffalo both.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="field-title">Rate Chart Type</label>
+        <select id="rateChartType">
+          <option value="Formula">Rate list by Formula</option>
+          <option value="Matrix">Rate list by Chart</option>
+        </select>
+      </div>
+
+      <div class="rate-header-row">
+        <label class="field-title" style="margin:0">Rate based on</label>
+        <button type="button" class="btn-add-slot" onclick="openRateEditor()">Add Slot</button>
+      </div>
+
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="rateBasedOn" value="Only Fat" checked onclick="selectRateChart('Only Fat')">
+          <span>Only Fat</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="rateBasedOn" value="Fat/CLR" onclick="selectRateChart('Fat/CLR')">
+          <span>Fat/CLR</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="rateBasedOn" value="Fat/SNF" onclick="selectRateChart('Fat/SNF')">
+          <span>Fat/SNF</span>
+        </label>
+      </div>
+
+      <div class="slot-table">
+        
+            
+
+        <div class="slot-table-header">
+          <span>Range</span>
+          <span>Rate</span>
+        </div>
+        <div id="fatSnfSlots"></div>
+      </div>
+
+      <div id="rateChartTable" style="overflow:auto;width:100%;margin-top:15px;"></div>
+
+      <div class="action-footer" style="display:flex; gap:10px; margin-top:20px;">
+        <button type="button" class="primary" style="flex:1;" onclick="saveRateSettings()">Save Settings</button>
+        <button type="button" class="btn-save-main" style="flex:1; background:#6c757d; color:white;" onclick="handleRateBack()">Back</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="rateSlotEditor" class="hidden">
+    <div class="slot-editor-header">
+      <h2>Edit Slot</h2>
+      <button type="button" class="btn-close-x" onclick="closeRateEditor()">✕</button>
+    </div>
+
+    <div class="panel" style="padding: 16px; background: #ffffff; border-radius: 12px;">
+      <div class="form-group">
+        <label class="field-title">Rate Formula</label>
+        <select id="rateFormula">
+          <option value="By Fat and SNF Ratio">By Fat and SNF Ratio</option>
+        </select>
+      </div>
+
+      <div style="display:grid; gap:15px;">
+        <div id="slot1Panel" class="panel" style="padding:12px; border:1px solid #ddd;">
+          <h3>Slot 1</h3>
+          <label class="field-title">Fat Range</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="slot1Min" value="2.5" step="0.1" placeholder="2.5">
+            <span>To</span>
+            <input type="number" id="slot1Max" value="6.5" step="0.1" placeholder="6.5">
+          </div>
+
+          <label class="field-title">FAT Rate / Kg</label>
+          <input type="number" id="slot1FatRate" value="544.61" step="0.01" placeholder="FAT Rate">
+
+          <label class="field-title">SNF Rate / Kg</label>
+          <input type="number" id="slot1SnfRate" value="277.76" step="0.01" placeholder="SNF Rate">
+        </div>
+
+        <div id="slot2Panel" class="panel" style="padding:12px; border:1px solid #ddd;">
+          <h3>Slot 2</h3>
+          <label class="field-title">Fat Range</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="slot2Min" value="6.6" step="0.1" placeholder="6.6">
+            <span>To</span>
+            <input type="number" id="slot2Max" value="15" step="0.1" placeholder="15">
+          </div>
+
+          <label class="field-title">FAT Rate / Kg</label>
+          <input type="number" id="slot2FatRate" value="544.61" step="0.01" placeholder="FAT Rate">
+
+          <label class="field-title">SNF Rate / Kg</label>
+          <input type="number" id="slot2SnfRate" value="277.76" step="0.01" placeholder="SNF Rate">
+        </div>
+        <div id="slot3Panel" class="panel" style="padding:12px; border:1px solid #ddd;">
+          <h3>Slot 3 (Fat/CLR)</h3>
+        
+          <label class="field-title">CLR Range</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="number" id="slot3Min" value="20" step="0.1" placeholder="Min CLR">
+            <span>To</span>
+            <input type="number" id="slot3Max" value="30" step="0.1" placeholder="Max CLR">
+          </div>
+        
+          <label class="field-title">FAT Rate / Kg</label>
+          <input type="number" id="slot3FatRate" value="544.61" step="0.01">
+        
+          <label class="field-title">SNF Rate / Kg</label>
+          <input type="number" id="slot3SnfRate" value="277.76" step="0.01">
+        </div>
+        <div id="onlyFatPanel" class="panel" style="display:none;padding:12px;border:1px solid #ddd;">
+          <h3>Only Fat Formula</h3>
+        
+          <label class="field-title">Fat Rate</label>
+          <input type="number" id="onlyFatRate" min="0" step="0.01" placeholder="Fat Rate भरें">
+        
+          <label class="field-title">Ratio</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="onlyFatRatioTop" min="1" max="10.1" step="0.1" value="6.0">
+            <span>÷</span>
+            <input type="number" id="onlyFatRatioBottom" min="1" max="10.1" step="0.1" value="6.5">
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-action-footer">
+        <button type="button" class="btn-cancel-flat" onclick="closeRateEditor()">CANCEL</button>
+        <button type="button" class="btn-ok-flat" onclick="saveRateSlot()">OK</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom">
+  <button class="primary" onclick="openAddCustomerModal()"><span>➕</span>add Customer</button>
+  <button class="main" onclick="openCollectionTab('milkCollection')"><span>🥛</span>Add Milk</button>
+  <button onclick="show('rateSettings')"><span>💲</span>Rate List</button>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+const today = new Date().toISOString().slice(0,10);
+
+$('today').textContent = new Date().toLocaleDateString('en-IN', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+$('milkDate').value = today;
+updateMilkDateLabel();
+$('billFrom').value = today;
+$('billTo').value = today;
+$('reportMonth').value = new Date().toISOString().slice(0,7);
+if ($('totalFromDate')) $('totalFromDate').value = today;
+if ($('totalToDate')) $('totalToDate').value = today;
+if ($('csFromDate')) $('csFromDate').value = today;
+if ($('csToDate')) $('csToDate').value = today;
+if ($('cmFromDate')) $('cmFromDate').value = today;
+if ($('cmToDate')) $('cmToDate').value = today;
+
+let customers = JSON.parse(localStorage.getItem('rajput_customers') || '[]');
+let entries = JSON.parse(localStorage.getItem('rajput_entries') || '[]');
+let advanceEntries = JSON.parse(localStorage.getItem('rajput_advance_entries') || '[]');
+let shift = 'Morning';
+let period = 'Total';
+let editingCode = null;
+let currentAdvanceType = 'Pay';
+let dashboardMode = 'Collection';
+let selectedRateChart = localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+let currentRateTargetCustomer = null;
+let leaderRateSettingsMode = false;
+let leaderRatePreviewRows = [];
+let leaderRatePreviewMeta = null;
+
+function persist() {
+  // Local backup
+  localStorage.setItem('rajput_customers', JSON.stringify(customers));
+  localStorage.setItem('rajput_entries', JSON.stringify(entries));
+  localStorage.setItem('rajput_advance_entries', JSON.stringify(advanceEntries));
+
+  // Firebase cloud sync
+  if (typeof window.queueDairyCloudSave === 'function') {
+    window.queueDairyCloudSave();
+  }
+}
+let dairyCloudReady = false;
+let dairyCloudSaveTimer = null;
+
+window.queueDairyCloudSave = function () {
+  clearTimeout(dairyCloudSaveTimer);
+
+  dairyCloudSaveTimer = setTimeout(async function () {
+    try {
+      if (typeof dairyAuth === 'undefined' || !dairyAuth.currentUser) {
+        console.warn('Firebase login nahi hai. Cloud save pending.');
+        return;
+      }
+      // Login ke baad us UID ka cloud data load hone se pehle save na karein.
+      if (!dairyCloudReady) {
+        console.warn('Account data abhi load ho raha hai. Save roka gaya.');
+        return;
+      }
+
+      if (typeof firebase === 'undefined' || !firebase.firestore) {
+        console.error('Firebase Firestore available nahi hai.');
+        return;
+      }
+
+      const db = firebase.firestore();
+      const uid = dairyAuth.currentUser.uid;
+
+      await db.collection('users')
+        .doc(uid)
+        .collection('appData')
+        .doc('dairyData')
+        .set({
+          customers: customers,
+          entries: entries,
+          advanceEntries: advanceEntries,
+          settings: Object.keys(localStorage)
+  .filter(key => key.startsWith('rajput_'))
+  .reduce((obj, key) => {
+    obj[key] = localStorage.getItem(key);
+    return obj;
+  }, {}),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+      console.log('Dairy data Firebase mein save ho gaya.');
+    } catch (error) {
+      console.error('Firebase cloud save error:', error);
+    }
+  }, 700);
+};
+window.loadDairyCloudData = async function () {
+  try {
+    if (typeof dairyAuth === 'undefined' || !dairyAuth.currentUser) {
+      if (!dairyCloudReady) return;
+      return false;
+    }
+
+    const db = firebase.firestore();
+    const uid = dairyAuth.currentUser.uid;
+
+    const doc = await db.collection('users')
+      .doc(uid)
+      .collection('appData')
+      .doc('dairyData')
+      .get();
+
+    if (!doc.exists) {
+      // Naya Firebase UID: pichhle account ka shared LocalStorage data bilkul na dikhayein.
+      customers = [];
+      entries = [];
+      advanceEntries = [];
+      Object.keys(localStorage).filter(key => key.startsWith('rajput_')).forEach(key => localStorage.removeItem(key));
+      localStorage.setItem('rajput_customers', '[]');
+      localStorage.setItem('rajput_entries', '[]');
+      localStorage.setItem('rajput_advance_entries', '[]');
+      if (typeof updateCustomerOptions === 'function') updateCustomerOptions();
+      if (typeof renderCustomers === 'function') renderCustomers();
+      if (typeof populateReportCustomers === 'function') populateReportCustomers();
+      if (typeof renderMilkEntries === 'function') renderMilkEntries();
+      if (typeof renderAdvances === 'function') renderAdvances();
+      if (typeof dashboard === 'function') dashboard();
+      if (typeof loadSettings === 'function') loadSettings();
+      if (typeof renderRateSlots === 'function') renderRateSlots();
+      if (typeof renderRateChartTable === 'function') renderRateChartTable();
+      console.log('Naya Firebase account: blank dairy data loaded.');
+      return true;
+    }
+
+    const data = doc.data();
+
+    // Har UID ke settings cloud se load hon; purane account ki local settings mix na hon.
+    Object.keys(localStorage).filter(key => key.startsWith('rajput_')).forEach(key => localStorage.removeItem(key));
+    if (Array.isArray(data.customers)) customers = data.customers;
+    if (Array.isArray(data.entries)) entries = data.entries;
+    if (Array.isArray(data.advanceEntries)) advanceEntries = data.advanceEntries;
+    if (data.settings && typeof data.settings === 'object') {
+  Object.keys(data.settings).forEach(key => {
+    localStorage.setItem(key, data.settings[key]);
+  });
+}
+    localStorage.setItem('rajput_customers', JSON.stringify(customers));
+    localStorage.setItem('rajput_entries', JSON.stringify(entries));
+    localStorage.setItem('rajput_advance_entries', JSON.stringify(advanceEntries));
+
+    if (typeof updateCustomerOptions === 'function') updateCustomerOptions();
+    if (typeof renderCustomers === 'function') renderCustomers();
+    if (typeof populateReportCustomers === 'function') populateReportCustomers();
+    if (typeof renderMilkEntries === 'function') renderMilkEntries();
+    if (typeof renderAdvances === 'function') renderAdvances();
+    if (typeof dashboard === 'function') dashboard();
+    if (typeof loadSettings === 'function') loadSettings();
+    if (typeof renderRateSlots === 'function') renderRateSlots();
+    if (typeof renderRateChartTable === 'function') renderRateChartTable();
+
+    console.log('Firebase data successfully load ho gaya.');
+    return true;
+
+  } catch (error) {
+    console.error('Firebase cloud load error:', error);
+    return false;
+  }
+};
+
+function loadSettings() {
+  const dairyName = localStorage.getItem('rajput_dairy_name');
+  const defaultRate = localStorage.getItem('rajput_default_rate');
+  if (dairyName !== null && $('dairyName')) {
+    $('dairyName').value = dairyName;
+    if ($('headerDairyName')) $('headerDairyName').textContent = dairyName;
+  }
+  if (defaultRate !== null && $('defaultRate')) {
+    $('defaultRate').value = defaultRate;
+  }
+}
+
+function showToast(message) {
+  const oldToast = document.getElementById('appToast');
+  if (oldToast) oldToast.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'appToast';
+  toast.textContent = '✓ ' + message;
+  toast.style.cssText = `
+    position:fixed;
+    top:25px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#13864c;
+    color:white;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:bold;
+    box-shadow:0 4px 15px #0003;
+    z-index:999999;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function saveSettings() {
+  const dairyName = $('dairyName').value.trim();
+  const defaultRate = parseFloat($('defaultRate').value);
+  if (!dairyName) {
+    alert('Dairy Name bharein.');
+    return;
+  }
+  if (!Number.isFinite(defaultRate) || defaultRate < 0) {
+    alert('Default Milk Rate sahi bharein.');
+    return;
+  }
+  localStorage.setItem('rajput_dairy_name', dairyName);
+  localStorage.setItem('rajput_default_rate', defaultRate.toString());
+  if ($('headerDairyName')) $('headerDairyName').textContent = dairyName;
+  alert('Settings successfully save ho gayi hain!');
+}
+
+function backup() {
+  const data = {
+    customers: customers,
+    entries: entries,
+    advanceEntries: advanceEntries,
+    defaultRate: localStorage.getItem('rajput_default_rate'),
+    rateChart: localStorage.getItem('rajput_rate_chart'),
+    slotRates: JSON.parse(localStorage.getItem('rajput_slot_rates') || '[]'),
+    customerRates: (() => {
+      const obj = {};
+      customers.forEach(c => {
+        if (c.rateSettings) obj[c.code] = c.rateSettings;
+      });
+      return obj;
+    })(),
+    backupDate: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Rajput_Dairy_Backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('Backup download ho gaya!');
+}
+
+function restore() {
+  const fileInput = document.getElementById('restoreFile');
+  const file = fileInput.files[0];
+  if (!file) {
+    alert('Pehle backup JSON file select karein.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function () {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || !Array.isArray(data.customers) || !Array.isArray(data.entries)) {
+        throw new Error('Invalid backup');
+      }
+      if (!confirm('Purana data replace karke backup restore karein?')) {
+        return;
+      }
+
+      customers = data.customers || [];
+      entries = data.entries || [];
+      advanceEntries = data.advanceEntries || [];
+
+      if (data.defaultRate != null && data.defaultRate !== undefined) {
+        localStorage.setItem('rajput_default_rate', data.defaultRate);
+      }
+
+      if (data.rateChart) {
+        localStorage.setItem('rajput_rate_chart', data.rateChart);
+      }
+
+      if (Array.isArray(data.slotRates) && data.slotRates.length) {
+        localStorage.setItem('rajput_slot_rates', JSON.stringify(data.slotRates));
+      }
+
+      if (data.customerRates && typeof data.customerRates === 'object') {
+        customers.forEach(c => {
+          if (data.customerRates[c.code]) c.rateSettings = data.customerRates[c.code];
+        });
+      }
+
+      persist();
+      loadSettings();
+      updateCustomerOptions();
+      renderCustomers();
+      renderAdvances();
+      dashboard();
+      renderMilkEntries();
+      location.reload();
+    } catch (error) {
+      alert('Backup file sahi nahi hai ya read nahi ho payi.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function show(id){
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  if ($(id)) $(id).classList.remove('hidden');
+  if (id === 'customers') renderCustomers();
+  updateCustomerOptions();
+  if (id === 'home') dashboard();
+  if (id === 'advance') renderAdvances();
+  const bottomNav = document.querySelector('.bottom');
+  if (bottomNav) bottomNav.style.display = id === 'home' ? 'flex' : 'none';
+  window.scrollTo(0,0);
+}
+
+function setShift(s){
+  shift = s;
+  $('morning').classList.toggle('active', s === 'Morning');
+  $('evening').classList.toggle('active', s === 'Evening');
+  if ($('milkShift')) $('milkShift').value = s;
+  dashboard();
+}
+
+function setMilkShift(value) {
+  shift = value;
+  document.getElementById('milkShift').value = value;
+  const morning = document.getElementById('morningBtn');
+  const evening = document.getElementById('eveningBtn');
+  morning.style.background = value === 'Morning' ? '#13864c' : 'white';
+  morning.style.color = value === 'Morning' ? 'white' : '#13864c';
+  evening.style.background = value === 'Evening' ? '#13864c' : 'white';
+  evening.style.color = value === 'Evening' ? 'white' : '#13864c';
+}
+
+function setPeriod(p, btn){
+  period = p;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  dashboard();
+}
+
+function setDashboardMode(mode, button) {
+  dashboardMode = mode;
+
+  const collectionBtn = document.getElementById('collectionModeBtn');
+  const distributionBtn = document.getElementById('distributionModeBtn');
+
+  if (collectionBtn) collectionBtn.classList.toggle('active', mode === 'Collection');
+  if (distributionBtn) distributionBtn.classList.toggle('active', mode === 'Distribution');
+
+  dashboard();
+}
+
+function openCollectionTab(sectionId, button) {
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  const collectionSec = $('collection');
+  if (collectionSec) collectionSec.classList.remove('hidden');
+  ['milkCollection', 'totalCollection', 'collectionSummary', 'customerMilk'].forEach(id => {
+    const sub = $(id);
+    if (sub) sub.classList.add('hidden');
+  });
+
+  let targetId = sectionId;
+  if (sectionId === 'collection' || !sectionId) targetId = 'milkCollection';
+
+  const targetSec = $(targetId);
+  if (targetSec) targetSec.classList.remove('hidden');
+  if (targetId === 'collectionSummary') {
+    const d = $('csDate'); if (d && !d.value) d.value = $('milkDate')?.value || new Date().toISOString().slice(0,10);
+    renderCollectionSummary();
+  }
+
+  document.querySelectorAll('.collection-tabs button').forEach(btn => btn.classList.remove('active'));
+  if (button) button.classList.add('active');
+  else {
+    const firstTab = document.querySelector('.collection-tabs button');
+    if (firstTab) firstTab.classList.add('active');
+  }
+
+  window.scrollTo(0, 0);
+  const collectionTabs = document.querySelector('.collection-tabs');
+  if (collectionTabs) collectionTabs.style.display = button ? 'flex' : 'none';
+  document.querySelector('.bottom').style.display = 'none';
+}
+function getGlobalRateConfig() {
+  const chart = localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+  const isFatClr = chart === 'Fat/CLR';
+
+  const slotRates = JSON.parse(
+    localStorage.getItem(isFatClr ? 'rajput_slot_rates_fatclr' : 'rajput_slot_rates') || '[]'
+  );
+
+  return {
+    chart,
+    slotRates,
+    fatRate: localStorage.getItem(isFatClr ? 'rajput_fat_rate_fatclr' : 'rajput_fat_rate') || '544.61',
+    snfRate: localStorage.getItem(isFatClr ? 'rajput_snf_rate_fatclr' : 'rajput_snf_rate') || '277.76'
+  };
+}
+
+function getCurrentRateConfig(customer) {
+  const globalCfg = getGlobalRateConfig();
+
+  if (customer && customer.rateSettings) {
+    const rs = customer.rateSettings;
+    const chart = rs.rateChart || globalCfg.chart;
+    const key = chart === 'Fat/CLR' ? 'slotRatesFatClr' : 'slotRates';
+    const globalSlotKey = chart === 'Fat/CLR' ? 'rajput_slot_rates_fatclr' : 'rajput_slot_rates';
+const globalFatKey = chart === 'Fat/CLR' ? 'rajput_fat_rate_fatclr' : 'rajput_fat_rate';
+const globalSnfKey = chart === 'Fat/CLR' ? 'rajput_snf_rate_fatclr' : 'rajput_snf_rate';
+    return {
+      chart,
+      slotRates: Array.isArray(rs[key]) && rs[key].length
+  ? rs[key]
+  : JSON.parse(localStorage.getItem(globalSlotKey) || '[]'),
+      fatRate: rs.fatRate || Number(localStorage.getItem(globalFatKey)) || globalCfg.fatRate,
+      snfRate: rs.snfRate || Number(localStorage.getItem(globalSnfKey)) || globalCfg.snfRate,
+    };
+  }
+
+  return globalCfg;
+}
+function updateMilkQualityInput(chartType) {
+  const isSnf = chartType === 'Fat/SNF';
+  
+  // Jab Fat/SNF ho toh upar SNF, niche CLR
+  // Jab Fat/CLR ho toh upar CLR, niche SNF
+  if ($('milkQualityLabel')) $('milkQualityLabel').textContent = isSnf ? 'SNF' : 'CLR';
+  if ($('milkClr')) $('milkClr').placeholder = isSnf ? 'SNF' : 'CLR';
+
+  if ($('milkSnfLabel')) $('milkSnfLabel').textContent = isSnf ? 'CLR' : 'SNF';
+  if ($('milkSnf')) $('milkSnf').placeholder = isSnf ? 'CLR' : 'SNF';
+}
+function calculateMilkRates() {
+  const code = $('milkCustomer') ? $('milkCustomer').value : '';
+  const c = customers.find(x => x.code === code);
+
+  const qty = parseFloat($('milkQty').value) || 0;
+  const fat = parseFloat($('milkFat').value) || 0;
+  const clr = parseFloat($('milkClr').value) || 0;
+
+  const rateCfg = getCurrentRateConfig(c);
+  const chartType = rateCfg.chart || 'Only Fat';
+
+  updateMilkQualityInput(chartType);
+
+  let calculatedRate = 0;
+  let calculatedSnf = 0;
+
+  // SNF calculation
+  if (chartType === 'Fat/SNF') {
+    calculatedSnf = clr;
+  } else if (fat > 0 && clr > 0) {
+    calculatedSnf = (clr / 4) + (0.2 * fat) + 0.14;
+  }
+
+  if ($('milkSnf')) {
+    if (chartType === 'Fat/SNF' && fat > 0 && clr > 0) {
+      $('milkSnf').value =
+        ((clr - (0.2 * fat) - 0.14) * 4).toFixed(2);
+    } else {
+      $('milkSnf').value =
+        calculatedSnf > 0 ? calculatedSnf.toFixed(2) : '';
+    }
+  }
+
+  // Customer personal rate, if configured
+  if (c && c.personalRate !== undefined &&
+      c.personalRate !== null && c.personalRate !== '') {
+
+    calculatedRate = Number(c.personalRate);
+
+  } else if (chartType === 'Only Fat') {
+
+    const onlyFatRate = Number(
+      c?.rateSettings?.onlyFatRate ??
+      localStorage.getItem('rajput_only_fat_rate') ?? 0
+    );
+
+    const ratioTop = Number(
+      c?.rateSettings?.onlyFatRatioTop ??
+      localStorage.getItem('rajput_only_fat_ratio_top') ?? 6.0
+    );
+
+    const ratioBottom = Number(
+      c?.rateSettings?.onlyFatRatioBottom ??
+      localStorage.getItem('rajput_only_fat_ratio_bottom') ?? 6.5
+    );
+
+    calculatedRate = fat > 0 && ratioBottom > 0
+  ? (fat / ratioBottom) * (onlyFatRate / 100)
+  : 0;
+
+  } else if (chartType === 'Fat/CLR') {
+
+    // Fat/CLR: Slot 3 only, range is checked by CLR
+    const slot3 = (rateCfg.slotRates || []).find(s =>
+      clr >= Number(s.min) && clr <= Number(s.max)
+    );
+
+    if (slot3 && fat > 0 && calculatedSnf > 0) {
+      calculatedRate =
+        ((fat * Number(slot3.fatRate)) +
+        (calculatedSnf * Number(slot3.snfRate))) / 100;
+    }
+
+  } else if (chartType === 'Fat/SNF') {
+
+    // Fat/SNF: existing Slot 1 and Slot 2, range checked by Fat
+    const slot = (rateCfg.slotRates || []).find(s =>
+      fat >= Number(s.min) && fat <= Number(s.max)
+    );
+
+    if (slot && fat > 0 && calculatedSnf > 0) {
+      calculatedRate =
+        ((fat * Number(slot.fatRate)) +
+        (calculatedSnf * Number(slot.snfRate))) / 100;
+    }
+  }
+
+  if ($('milkRate')) {
+    $('milkRate').value =
+      calculatedRate > 0 ? calculatedRate.toFixed(2) : '';
+  }
+
+  const totalAmount = qty * calculatedRate;
+
+  if ($('milkTotal')) {
+    $('milkTotal').value =
+      totalAmount > 0 ? totalAmount.toFixed(2) : '0.00';
+  }
+}
+
+function openAddCustomerModal() {
+  editingCode = null;
+  show('customers');
+  if ($('customerType')) $('customerType').value = 'Seller';
+  if ($('cattle')) $('cattle').value = 'Buffalo';
+  if ($('mobile')) $('mobile').value = '';
+  if ($('cname')) $('cname').value = '';
+  if ($('ccode')) $('ccode').value = '';
+  if ($('personalRate')) $('personalRate').value = '';
+  if ($('custFormTitle')) $('custFormTitle').textContent = "Add New Customer";
+  if ($('saveCustBtn')) $('saveCustBtn').textContent = "Save Customer";
+  if ($('customerFormPanel')) $('customerFormPanel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeCustomerForm() {
+  if ($('customerFormPanel')) $('customerFormPanel').classList.add('hidden');
+}
+
+function saveCustomer() {
+  const name = ($('cname') ? $('cname').value : '').trim();
+  const code = ($('ccode') ? $('ccode').value : '').trim();
+  const mobile = ($('mobile') ? $('mobile').value : '').trim();
+  const type = $('customerType') ? $('customerType').value : 'Seller';
+  const cattle = $('cattle') ? $('cattle').value : 'Buffalo';
+  const personalRateInput = $('personalRate') ? $('personalRate').value : '';
+  const personalRate = personalRateInput === '' ? '' : parseFloat(personalRateInput);
+
+  if (!name || !code) {
+    alert('Kripya Customer Name aur Code dono bharein!');
+    return;
+  }
+
+  if (editingCode) {
+    const index = customers.findIndex(c => c.code === editingCode);
+    if (index !== -1) {
+      customers[index] = { ...customers[index], name, code, mobile, type, cattle, personalRate };
+    }
+  } else {
+    if (customers.some(c => c.code === code)) {
+      alert('Is Code se pehle se customer majood hai!');
+      return;
+    }
+    customers.push({ code, name, mobile, type, cattle, personalRate, status: 'Active' });
+  }
+
+  persist();
+  renderCustomers();
+  updateCustomerOptions();
+  closeCustomerForm();
+  alert(editingCode ? 'Customer details update ho gayi hain!' : 'Naya Customer save ho gaya!');
+  editingCode = null;
+}
+
+let openDropdownCode = null;
+
+function renderCustomers() {
+  const q = ($('customerSearch') ? $('customerSearch').value : '').toLowerCase();
+  const sort = $('custSort') ? $('custSort').value : 'asc';
+  let list = customers.filter(c => (c.name + ' ' + c.code).toLowerCase().includes(q));
+
+  if (sort === 'asc') {
+    list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  } else {
+    list.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+  }
+
+  const activeCnt = customers.filter(c => !c.status || c.status === 'Active').length;
+  const inactiveCnt = customers.filter(c => c.status === 'In-Active').length;
+  if ($('activeCount')) $('activeCount').textContent = activeCnt;
+  if ($('inactiveCount')) $('inactiveCount').textContent = inactiveCnt;
+
+  const box = $('customerList');
+  if (!box) return;
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">No customers found.</div>';
+    return;
+  }
+
+  box.innerHTML = list.map((c, index) => {
+    const firstLetter = c.name ? c.name.charAt(0).toUpperCase() : 'C';
+    const isSelected = index === 0 ? 'active-selected' : '';
+    const isMenuOpen = openDropdownCode === c.code;
+
+    return `
+      <div class="cust-card ${isSelected}">
+        <div class="cust-left-info">
+          <div class="cust-avatar">${firstLetter}</div>
+          <div>
+            <div class="cust-name">${escapeHtml(c.name)}</div>
+            <div class="cust-sub">${escapeHtml(c.cattle || 'Buffalo')} / ${escapeHtml(c.type || 'Seller')}</div>
+          </div>
+        </div>
+        <div class="cust-right-info">
+          <div class="cust-code">${escapeHtml(c.code)}</div>
+          <button type="button" class="cust-dots-btn" onclick="toggleCustMenu(event, '${escapeAttr(c.code)}')">⋮</button>
+        </div>
+        ${isMenuOpen ? `
+          <div class="cust-dropdown">
+            <button type="button" onclick="editCustomer('${escapeAttr(c.code)}')">Edit</button>
+            <button type="button" onclick="openCustRateSettings('${escapeAttr(c.code)}')">Rate</button>
+            <button type="button" onclick="toggleCustStatus('${escapeAttr(c.code)}')">${c.status === 'In-Active' ? 'Active' : 'In-Active'}</button>
+            <button type="button" style="color:red" onclick="deleteCustomer('${escapeAttr(c.code)}')">Delete</button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleCustMenu(event, code) {
+  event.stopPropagation();
+  openDropdownCode = openDropdownCode === code ? null : code;
+  renderCustomers();
+}
+
+document.addEventListener('click', () => {
+  if (openDropdownCode) {
+    openDropdownCode = null;
+    renderCustomers();
+  }
+});
+
+function editCustomer(code) {
+  openDropdownCode = null;
+  const c = customers.find(x => x.code === code);
+  if (!c) return;
+  editingCode = c.code;
+  if ($('customerType')) $('customerType').value = c.type || 'Seller';
+  if ($('cattle')) $('cattle').value = c.cattle || 'Buffalo';
+  if ($('mobile')) $('mobile').value = c.mobile || '';
+  if ($('cname')) $('cname').value = c.name || '';
+  if ($('ccode')) $('ccode').value = c.code || '';
+  if ($('personalRate')) $('personalRate').value = (c.personalRate !== undefined && c.personalRate !== null) ? c.personalRate : '';
+  if ($('custFormTitle')) $('custFormTitle').textContent = "Edit Customer";
+  if ($('saveCustBtn')) $('saveCustBtn').textContent = "Update";
+  if ($('customerFormPanel')) $('customerFormPanel').classList.remove('hidden');
+  renderCustomers();
+  setTimeout(() => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+  }, 50);
+
+}
+
+function updateCustomerOptions() {
+  refreshAdvanceCustomerOptions();
+  ['milkCustomer', 'billCustomer', 'cmCustomerSelect', 'leaderRateCustomer'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    const old = el.value;
+    el.innerHTML = customers.map(c => `<option value="${escapeAttr(c.code)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+    if (customers.some(c => c.code === old)) el.value = old;
+  });
+  calculateMilkRates();
+}
+
+function toggleCustStatus(code) {
+  const c = customers.find(x => x.code === code);
+  if (!c) return;
+  c.status = (c.status === 'In-Active') ? 'Active' : 'In-Active';
+  persist();
+  renderCustomers();
+}
+
+function deleteCustomer(code) {
+  const customer = customers.find(c => String(c.code) === String(code));
+  if (!customer) return;
+  const milkCount = entries.filter(e => String(e.code) === String(code)).length;
+  const advanceCount = advanceEntries.filter(a => String(a.code) === String(code)).length;
+  const message = `${customer.name || code} ko delete karne par uski ${milkCount} milk entries aur ${advanceCount} advance records bhi hamesha ke liye delete ho jayenge.\n\nKya aap sure hain?`;
+  if (confirm(message)) {
+    customers = customers.filter(c => String(c.code) !== String(code));
+    entries = entries.filter(e => String(e.code) !== String(code));
+    advanceEntries = advanceEntries.filter(a => String(a.code) !== String(code));
+    persist();
+    renderCustomers();
+    updateCustomerOptions();
+    renderMilkEntries();
+    renderAdvances();
+    renderCollectionSummary();
+    dashboard();
+  }
+}
+
+function openCustRateSettings(code) {
+  openDropdownCode = null;
+  currentRateTargetCustomer = code;
+  const c = customers.find(x => x.code === code);
+  if (!c) return;
+
+  if ($('rateSettingsTitle')) {
+    $('rateSettingsTitle').textContent = `Rate for: ${c.name} (${c.code})`;
+  }
+
+  const rs = c.rateSettings || {};
+  if ($('rateChartSetup')) $('rateChartSetup').value = rs.setup || 'General';
+  if ($('rateChartType')) $('rateChartType').value = rs.type || 'Formula';
+
+  const chart = rs.rateChart || localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+  selectedRateChart = chart;
+  const radio = document.querySelector(`input[name="rateBasedOn"][value="${chart}"]`);
+  if (radio) radio.checked = true;
+
+  renderRateSlots();
+  renderRateChartTable();
+  show('rateSettings');
+}
+
+function openLeaderRateChanger() {
+  updateCustomerOptions();
+  if ($('leaderRateFrom') && !$('leaderRateFrom').value) $('leaderRateFrom').value = today;
+  if ($('leaderRateTo') && !$('leaderRateTo').value) $('leaderRateTo').value = today;
+  show('leaderRateChanger');
+}
+
+function resetLeaderRatePreview() {
+  leaderRatePreviewRows = [];
+  leaderRatePreviewMeta = null;
+  if ($('leaderRateBillResult')) $('leaderRateBillResult').innerHTML = '';
+  if ($('leaderRateConfirmation')) $('leaderRateConfirmation').classList.add('hidden');
+}
+
+function openLeaderCustomerRateList() {
+  const code = $('leaderRateCustomer') ? $('leaderRateCustomer').value : '';
+  if (!code || !customers.some(c => c.code === code)) {
+    alert('Pehle Customer select karein.');
+    return;
+  }
+  resetLeaderRatePreview();
+  leaderRateSettingsMode = true;
+  openCustRateSettings(code);
+}
+
+function handleRateBack() {
+  if (leaderRateSettingsMode) {
+    currentRateTargetCustomer = null;
+    leaderRateSettingsMode = false;
+    show('leaderRateChanger');
+  } else if (currentRateTargetCustomer) {
+    currentRateTargetCustomer = null;
+    show('customers');
+  } else {
+    show('settings');
+  }
+}
+
+function getSlotConfigForCurrentScope() {
+  const isFatClr = selectedRateChart === 'Fat/CLR';
+
+  if (currentRateTargetCustomer) {
+    const c = customers.find(x => x.code === currentRateTargetCustomer);
+    const key = isFatClr ? 'slotRatesFatClr' : 'slotRates';
+
+    if (c && c.rateSettings && Array.isArray(c.rateSettings[key])) {
+      return c.rateSettings[key];
+    }
+  }
+
+  const storageKey = isFatClr
+    ? 'rajput_slot_rates_fatclr'
+    : 'rajput_slot_rates';
+
+  const savedSlots = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+  if (savedSlots.length) return savedSlots;
+
+  return isFatClr
+  ? [{ min: 15, max: 35, fatRate: 544.61, snfRate: 277.76 }]
+    : [
+        { min: 2.5, max: 6.5, fatRate: 544.61, snfRate: 277.76 },
+        { min: 6.6, max: 15, fatRate: 544.61, snfRate: 277.76 }
+      ];
+}
+
+function renderRateSlots() {
+  const container = $('fatSnfSlots');
+  if (!container) return;
+
+  if (selectedRateChart === 'Only Fat') {
+    const c = currentRateTargetCustomer
+      ? customers.find(x => x.code === currentRateTargetCustomer)
+      : null;
+
+    const rate = c?.rateSettings?.onlyFatRate
+      || localStorage.getItem('rajput_only_fat_rate')
+      || 0;
+
+    container.innerHTML = `
+      <div class="slot-table-row">
+        <div class="slot-info">
+          <span class="slot-desc">Only Fat Rate</span>
+        </div>
+        <div class="slot-rate-val">${Number(rate).toFixed(2)}</div>
+        <button type="button" class="btn-edit-icon" onclick="openRateEditor()">✏️</button>
+      </div>
+    `;
+    return;
+  }
+
+  const slots = getSlotConfigForCurrentScope();
+
+  container.innerHTML = slots.map(slot => `
+    <div class="slot-table-row">
+      <div class="slot-info">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>${Number(slot.min).toFixed(1)} To ${Number(slot.max).toFixed(1)}</span>
+        </div>
+        <span class="slot-desc">By Fat and SNF Ratio</span>
+      </div>
+      <div class="slot-rate-val">${Number(slot.fatRate || 0).toFixed(2)}</div>
+      <button type="button" class="btn-edit-icon" onclick="openRateEditor()">✏️</button>
+    </div>
+  `).join('');
+
+  if (slots.length === 0) {
+    container.innerHTML = '<div class="empty">No slots configured.</div>';
+  }
+}
+
+function saveRateSettings() {
+  const selectedRadio = document.querySelector('input[name="rateBasedOn"]:checked');
+  const chartVal = selectedRadio ? selectedRadio.value : selectedRateChart;
+  const isFatClr = chartVal === 'Fat/CLR';
+  const isOnlyFat = chartVal === 'Only Fat';
+
+if (isOnlyFat) {
+  const rate = Number($('onlyFatRate').value);
+  const top = Number($('onlyFatRatioTop').value);
+  const bottom = Number($('onlyFatRatioBottom').value);
+
+  if (rate <= 0 || top < 1 || top > 10.1 || bottom < 1 || bottom > 10.1) {
+    showToast('Fat Rate aur Ratio sahi bharein!');
+    return;
+  }
+
+  if (currentRateTargetCustomer) {
+    const c = customers.find(x => x.code === currentRateTargetCustomer);
+    if (c) {
+      if (!c.rateSettings) c.rateSettings = {};
+      c.rateSettings.rateChart = chartVal;
+      c.rateSettings.onlyFatRate = rate;
+      c.rateSettings.onlyFatRatioTop = top;
+      c.rateSettings.onlyFatRatioBottom = bottom;
+      persist();
+    }
+    currentRateTargetCustomer = null;
+    showToast('Customer Rate Settings Saved!');
+    if (leaderRateSettingsMode) {
+      leaderRateSettingsMode = false;
+      show('leaderRateChanger');
+    } else {
+      show('customers');
+    }
+  } else {
+    localStorage.setItem('rajput_rate_chart', chartVal);
+    localStorage.setItem('rajput_only_fat_rate', String(rate));
+    localStorage.setItem('rajput_only_fat_ratio_top', String(top));
+    localStorage.setItem('rajput_only_fat_ratio_bottom', String(bottom));
+    showToast('Rate Settings Saved!');
+    show('settings');
+  }
+
+  calculateMilkRates();
+  return;
+}
+  let slotRates;
+
+if (isFatClr) {
+  slotRates = [{
+    min: Number($('slot3Min').value || 0),
+    max: Number($('slot3Max').value || 0),
+    fatRate: Number($('slot3FatRate').value || 0),
+    snfRate: Number($('slot3SnfRate').value || 0)
+  }];
+} else {
+  slotRates = [
+    {
+      min: Number($('slot1Min').value || 0),
+      max: Number($('slot1Max').value || 0),
+      fatRate: Number($('slot1FatRate').value || 0),
+      snfRate: Number($('slot1SnfRate').value || 0)
+    },
+    {
+      min: Number($('slot2Min').value || 0),
+      max: Number($('slot2Max').value || 0),
+      fatRate: Number($('slot2FatRate').value || 0),
+      snfRate: Number($('slot2SnfRate').value || 0)
+    }
+  ];
+}
+
+  const valid = slotRates.every(s =>
+    s.min >= 0 && s.max > s.min &&
+    s.fatRate > 0 && s.snfRate > 0
+  );
+
+  if (!valid) {
+    showToast('Slot ki range aur rates sahi bharein!');
+    return;
+  }
+
+  const slotKey = isFatClr ? 'slotRatesFatClr' : 'slotRates';
+  const fatKey = isFatClr ? 'rajput_fat_rate_fatclr' : 'rajput_fat_rate';
+  const snfKey = isFatClr ? 'rajput_snf_rate_fatclr' : 'rajput_snf_rate';
+
+  if (currentRateTargetCustomer) {
+    const c = customers.find(x => x.code === currentRateTargetCustomer);
+
+    if (c) {
+      if (!c.rateSettings) c.rateSettings = {};
+
+      c.rateSettings.setup = $('rateChartSetup') ? $('rateChartSetup').value : 'General';
+      c.rateSettings.type = $('rateChartType') ? $('rateChartType').value : 'Formula';
+      c.rateSettings.rateChart = chartVal;
+      c.rateSettings[slotKey] = slotRates;
+      c.rateSettings.fatRate = String(slotRates[0].fatRate);
+      c.rateSettings.snfRate = String(slotRates[0].snfRate);
+
+      persist();
+    }
+
+    showToast('Customer Rate Settings Saved!');
+    currentRateTargetCustomer = null;
+    if (leaderRateSettingsMode) {
+      leaderRateSettingsMode = false;
+      show('leaderRateChanger');
+    } else {
+      show('customers');
+    }
+  } else {
+    selectedRateChart = chartVal;
+
+    localStorage.setItem('rajput_rate_chart', chartVal);
+    localStorage.setItem(
+      isFatClr ? 'rajput_slot_rates_fatclr' : 'rajput_slot_rates',
+      JSON.stringify(slotRates)
+    );
+    localStorage.setItem(fatKey, String(slotRates[0].fatRate));
+    localStorage.setItem(snfKey, String(slotRates[0].snfRate));
+    persist();
+    showToast('Rate Settings Saved!');
+    show('settings');
+  }
+
+  calculateMilkRates();
+}
+
+function openRateEditor() {
+  const isFatClr = selectedRateChart === 'Fat/CLR';
+  const isOnlyFat = selectedRateChart === 'Only Fat';
+const onlyFatPanel = $('onlyFatPanel');
+  const slot1Panel = $('slot1Panel');
+  const slot2Panel = $('slot2Panel');
+  const slot3Panel = $('slot3Panel');
+
+  if (slot1Panel) slot1Panel.style.display = (isFatClr || isOnlyFat) ? 'none' : '';
+if (slot2Panel) slot2Panel.style.display = (isFatClr || isOnlyFat) ? 'none' : '';
+if (slot3Panel) slot3Panel.style.display = isFatClr ? '' : 'none';
+if (onlyFatPanel) onlyFatPanel.style.display = isOnlyFat ? '' : 'none';
+
+  show('rateSlotEditor');
+
+  const slots = getSlotConfigForCurrentScope();
+  if (isOnlyFat) {
+  const c = currentRateTargetCustomer
+    ? customers.find(x => x.code === currentRateTargetCustomer)
+    : null;
+
+  $('onlyFatRate').value = c?.rateSettings?.onlyFatRate || localStorage.getItem('rajput_only_fat_rate') || '';
+  $('onlyFatRatioTop').value = c?.rateSettings?.onlyFatRatioTop || localStorage.getItem('rajput_only_fat_ratio_top') || '6.0';
+  $('onlyFatRatioBottom').value = c?.rateSettings?.onlyFatRatioBottom || localStorage.getItem('rajput_only_fat_ratio_bottom') || '6.5';
+}
+  if (isFatClr) {
+    const s = slots && slots[0] ? slots[0] : {};
+    $('slot3Min').value = s.min ?? 20;
+    $('slot3Max').value = s.max ?? 30;
+    $('slot3FatRate').value = s.fatRate ?? 544.61;
+    $('slot3SnfRate').value = s.snfRate ?? 277.76;
+  } else {
+    const s1 = slots && slots[0] ? slots[0] : {};
+    const s2 = slots && slots[1] ? slots[1] : {};
+
+    $('slot1Min').value = s1.min ?? 2.5;
+    $('slot1Max').value = s1.max ?? 6.5;
+    $('slot1FatRate').value = s1.fatRate ?? 544.61;
+    $('slot1SnfRate').value = s1.snfRate ?? 277.76;
+
+    $('slot2Min').value = s2.min ?? 6.6;
+    $('slot2Max').value = s2.max ?? 15.0;
+    $('slot2FatRate').value = s2.fatRate ?? 544.61;
+    $('slot2SnfRate').value = s2.snfRate ?? 277.76;
+  }
+}
+
+function closeRateEditor() {
+  renderRateSlots();
+  show('rateSettings');
+}
+
+
+function saveRateSlot() {
+  const isFatClr = selectedRateChart === 'Fat/CLR';
+  const isOnlyFat = selectedRateChart === 'Only Fat';
+
+  if (isOnlyFat) {
+    const rate = Number($('onlyFatRate').value);
+    const top = Number($('onlyFatRatioTop').value);
+    const bottom = Number($('onlyFatRatioBottom').value);
+
+    if (rate <= 0 || top < 1 || top > 10.1 || bottom < 1 || bottom > 10.1) {
+      showToast('Fat Rate aur Ratio sahi bharein!');
+      return;
+    }
+
+    if (currentRateTargetCustomer) {
+      const c = customers.find(x => x.code === currentRateTargetCustomer);
+      if (c) {
+        if (!c.rateSettings) c.rateSettings = {};
+        c.rateSettings.rateChart = 'Only Fat';
+        c.rateSettings.onlyFatRate = rate;
+        c.rateSettings.onlyFatRatioTop = top;
+        c.rateSettings.onlyFatRatioBottom = bottom;
+        persist();
+      }
+      if (!leaderRateSettingsMode) currentRateTargetCustomer = null;
+    } else {
+      localStorage.setItem('rajput_rate_chart', 'Only Fat');
+      localStorage.setItem('rajput_only_fat_rate', String(rate));
+      localStorage.setItem('rajput_only_fat_ratio_top', String(top));
+      localStorage.setItem('rajput_only_fat_ratio_bottom', String(bottom));
+    }
+
+    showToast('Only Fat Rate Saved!');
+    show('rateSettings');
+    calculateMilkRates();
+    return;
+  }
+
+  let arr;
+  if (isFatClr) {
+    arr = [{
+      min: Number($('slot3Min').value || 0),
+      max: Number($('slot3Max').value || 0),
+      fatRate: Number($('slot3FatRate').value || 0),
+      snfRate: Number($('slot3SnfRate').value || 0)
+    }];
+  } else {
+    arr = [
+      {
+        min: Number($('slot1Min').value || 0),
+        max: Number($('slot1Max').value || 0),
+        fatRate: Number($('slot1FatRate').value || 0),
+        snfRate: Number($('slot1SnfRate').value || 0)
+      },
+      {
+        min: Number($('slot2Min').value || 0),
+        max: Number($('slot2Max').value || 0),
+        fatRate: Number($('slot2FatRate').value || 0),
+        snfRate: Number($('slot2SnfRate').value || 0)
+      }
+    ];
+  }
+  
+  const valid = arr.every(s => s.min >= 0 && s.max > s.min && s.fatRate > 0 && s.snfRate > 0);
+  if (!valid) {
+    showToast('Slot ki range aur rates sahi bharein!');
+    return;
+  }
+
+  const key = isFatClr ? 'slotRatesFatClr' : 'slotRates';
+  if (currentRateTargetCustomer) {
+    const c = customers.find(x => x.code === currentRateTargetCustomer);
+    if (c) {
+      if (!c.rateSettings) c.rateSettings = {};
+      c.rateSettings[key] = arr;
+      c.rateSettings.rateChart = selectedRateChart;
+      persist();
+    }
+  } else {
+    localStorage.setItem(isFatClr ? 'rajput_slot_rates_fatclr' : 'rajput_slot_rates', JSON.stringify(arr));
+  }
+  
+  showToast('Rate slot successfully save ho gaya!');
+  renderRateSlots();
+  show('rateSettings');
+  calculateMilkRates();
+}
+
+function selectRateChart(chartName) {
+  selectedRateChart = chartName;
+  updateMilkQualityInput(chartName);
+  renderRateChartTable();
+  renderRateSlots();
+  if (!currentRateTargetCustomer) {
+    localStorage.setItem('rajput_rate_chart', chartName);
+  }
+  calculateMilkRates();
+}
+
+function renderRateChartTable() {
+  const box = $('rateChartTable');
+  if (!box) return;
+
+  const chartType = selectedRateChart || localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+  const chartMode = $('rateChartType') ? $('rateChartType').value : 'Formula';
+
+  const targetRate = getCurrentRateConfig(currentRateTargetCustomer ? customers.find(c => c.code === currentRateTargetCustomer) : null);
+
+  const baseRate = parseFloat(localStorage.getItem('rajput_default_rate')) || 60;
+  const fatRatePerKg = parseFloat(targetRate.fatRate) || 544.61;
+  const snfRatePerKg = parseFloat(targetRate.snfRate) || 277.76;
+  const values = chartType === 'Fat/CLR'
+    ? Array.from({ length: 21 }, (_, i) => 20 + i * 0.5)
+    : chartType === 'Fat/SNF'
+      ? Array.from({ length: 21 }, (_, i) => 7 + i * 0.2)
+      : [];
+
+  let html = `<div style="overflow:auto;max-height:420px;width:100%;">
+    <table style="border-collapse:collapse;text-align:center;white-space:nowrap;min-width:100%;">
+    <thead><tr>
+    <th style="position:sticky;left:0;background:#16834b;color:white;padding:9px;border:1px solid #ccc;">Fat</th>`;
+
+  if (chartType === 'Only Fat') {
+    html += `<th style="background:#16834b;color:white;padding:9px;border:1px solid #ccc;">Rate ₹</th>`;
+  } else {
+    values.forEach(value => {
+      html += `<th style="background:#16834b;color:white;padding:9px;border:1px solid #ccc;">${value.toFixed(2)}</th>`;
+    });
+  }
+
+  html += `</tr></thead><tbody>`;
+
+  const fats = Array.from({ length: 26 }, (_, i) => 2.5 + i * 0.5);
+
+  fats.forEach(fat => {
+    html += `<tr>
+      <th style="position:sticky;left:0;background:#e8f5ec;padding:8px;border:1px solid #ccc;">${fat.toFixed(1)}</th>`;
+
+    const columns = chartType === 'Only Fat' ? [null] : values;
+
+    columns.forEach(value => {
+      let rate;
+      if (chartType === 'Only Fat') {
+        rate = (fat * baseRate) / 6.5;
+      } else {
+        const snf = chartType === 'Fat/SNF'
+          ? value
+          : (value / 4) + (0.2 * fat) + 0.14;
+
+        rate = ((fat * fatRatePerKg) + (snf * snfRatePerKg)) / 100;
+      }
+      const cellValue = rate.toFixed(2);
+
+      if (chartMode === 'Matrix') {
+        html += `<td style="padding:3px;border:1px solid #ccc;">
+          <input class="rate-matrix-cell" type="number" step="0.01"
+            data-fat="${fat.toFixed(1)}"
+            data-quality="${value === null ? '' : value.toFixed(2)}"
+            value="${cellValue}"
+            style="width:76px;padding:6px;text-align:center;border:1px solid #bbb;border-radius:4px;">
+        </td>`;
+      } else {
+        html += `<td style="padding:8px;border:1px solid #ccc;">₹${cellValue}</td>`;
+      }
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  box.innerHTML = html;
+}
+
+function calculateLeaderRateForEntry(entry, customer) {
+  const chart = customer?.rateSettings?.rateChart || localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+  const cfg = getCurrentRateConfig(customer);
+  const fat = Number(entry.fat) || 0;
+  const clr = Number(entry.clr) || 0;
+  const qty = Number(entry.qty) || 0;
+  let snf = 0;
+  let rate = 0;
+
+  // Existing chart formulas are reused; Customer personalRate is intentionally ignored here.
+  if (chart === 'Fat/SNF') snf = clr;
+  else if (fat > 0 && clr > 0) snf = (clr / 4) + (0.2 * fat) + 0.14;
+
+  if (chart === 'Only Fat') {
+    const onlyFatRate = Number(customer?.rateSettings?.onlyFatRate ?? localStorage.getItem('rajput_only_fat_rate') ?? 0);
+    const ratioBottom = Number(customer?.rateSettings?.onlyFatRatioBottom ?? localStorage.getItem('rajput_only_fat_ratio_bottom') ?? 6.5);
+    rate = fat > 0 && ratioBottom > 0 ? (fat / ratioBottom) * (onlyFatRate / 100) : 0;
+  } else if (chart === 'Fat/CLR') {
+    const slot = (cfg.slotRates || []).find(item => clr >= Number(item.min) && clr <= Number(item.max));
+    if (slot && fat > 0 && snf > 0) rate = ((fat * Number(slot.fatRate)) + (snf * Number(slot.snfRate))) / 100;
+  } else if (chart === 'Fat/SNF') {
+    const slot = (cfg.slotRates || []).find(item => fat >= Number(item.min) && fat <= Number(item.max));
+    if (slot && fat > 0 && snf > 0) rate = ((fat * Number(slot.fatRate)) + (snf * Number(slot.snfRate))) / 100;
+  }
+
+  if (!Number.isFinite(rate) || rate <= 0) return null;
+  const savedRate = Number(rate.toFixed(2));
+  return { ...entry, rate: savedRate, amount: qty * savedRate };
+}
+
+function getLeaderRatePeriodEntries(code, from, to, fromShift, toShift) {
+  const shiftOrder = value => value === 'Morning' ? 1 : 2;
+  const fromOrder = shiftOrder(fromShift);
+  const toOrder = shiftOrder(toShift);
+  return entries.filter(entry => {
+    if (entry.code !== code || !entry.date || entry.date < from || entry.date > to) return false;
+    const entryOrder = shiftOrder(entry.shift || 'Morning');
+    if (entry.date === from && entryOrder < fromOrder) return false;
+    if (entry.date === to && entryOrder > toOrder) return false;
+    return true;
+  });
+}
+
+function previewLeaderRateUpdate() {
+  const code = $('leaderRateCustomer')?.value || '';
+  const customer = customers.find(item => item.code === code);
+  const from = $('leaderRateFrom')?.value || '';
+  const to = $('leaderRateTo')?.value || '';
+  const fromShift = $('leaderRateFromShift')?.value || 'Morning';
+  const toShift = $('leaderRateToShift')?.value || 'Evening';
+
+  if (!customer) return alert('Pehle Customer select karein.');
+  if (!from || !to || from > to) return alert('From Date aur To Date sahi select karein.');
+  if (from === to && fromShift === 'Evening' && toShift === 'Morning') {
+    return alert('Same date par From Shift, To Shift se baad nahi ho sakti.');
+  }
+
+  const oldRows = getLeaderRatePeriodEntries(code, from, to, fromShift, toShift);
+  if (!oldRows.length) return alert('Is date aur shift range mein is Customer ki koi saved entry nahi mili.');
+
+  const updatedRows = [];
+  for (const entry of oldRows) {
+    const updated = calculateLeaderRateForEntry(entry, customer);
+    if (!updated) {
+      alert('Entry ' + (entry.date || '') + ' (' + (entry.shift || '') + ') ka rate calculate nahi ho paya. Rate List aur Fat/CLR values check karein. Koi entry update nahi hui.');
+      return;
+    }
+    updatedRows.push(updated);
+  }
+
+  leaderRatePreviewRows = updatedRows;
+  leaderRatePreviewMeta = { code, from, to, fromShift, toShift };
+  makeBill({ leaderRate: true, code, from, to, fromShift, toShift, rows: updatedRows });
+
+  const confirmation = $('leaderRateConfirmation');
+  if ($('leaderRateConfirmationText')) {
+    $('leaderRateConfirmationText').textContent =
+      customer.name + ' ki ' + updatedRows.length + ' saved entries ka updated bill neeche dikhaya gaya hai. Period: ' +
+      from + ' (' + fromShift + ') se ' + to + ' (' + toShift +
+      '). Bill check karke purani entries rakhein ya updated rate apply karein.';
+  }
+  if (confirmation) confirmation.classList.remove('hidden');
+  if (confirmation) confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function keepLeaderPreviousEntries() {
+  if (!leaderRatePreviewRows.length) return;
+  leaderRatePreviewRows = [];
+  leaderRatePreviewMeta = null;
+  if ($('leaderRateConfirmation')) $('leaderRateConfirmation').classList.add('hidden');
+  if ($('leaderRateBillResult')) $('leaderRateBillResult').innerHTML = '';
+  showToast('Purani entries aur unka bill waise hi rakha gaya hai.');
+}
+
+function applyLeaderUpdatedRate() {
+  if (!leaderRatePreviewRows.length || !leaderRatePreviewMeta) return alert('Pehle Updated Bill generate karein.');
+  const updatedById = new Map(leaderRatePreviewRows.map(row => [String(row.id), row]));
+  entries = entries.map(entry => {
+    const updated = updatedById.get(String(entry.id));
+    return updated ? { ...entry, rate: updated.rate, amount: updated.amount } : entry;
+  });
+
+  persist();
+  dashboard();
+  renderMilkEntries();
+  showToast('Selected date range ki entries naye rate se update ho gayi hain.');
+  if ($('leaderRateConfirmation')) $('leaderRateConfirmation').classList.add('hidden');
+  leaderRatePreviewRows = [];
+  leaderRatePreviewMeta = null;
+}
+function formatMilkDateLabel(value) {
+  if (!value) return '';
+  const parts = value.split('-').map(Number);
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+function updateMilkDateLabel() {
+  const input = $('milkDate');
+  const label = $('milkDateLabel');
+  if (input && label) label.textContent = formatMilkDateLabel(input.value);
+}
+function changeMilkDate(days) {
+  const input = $('milkDate');
+  if (!input) return;
+  const [y, m, d] = (input.value || today).split('-').map(Number);
+  const date = new Date(y, m - 1, d + days);
+  input.value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  updateMilkDateLabel();
+  renderMilkEntries();
+}
+
+function saveMilk() {
+  const code = $('milkCustomer').value;
+  const c = customers.find(x => x.code === code);
+  if (!code || !c) {
+  alert('Kripya sahi Customer select karein!');
+  return;
+}
+
+  const qty = Number($('milkQty').value);
+  const fat = Number($('milkFat').value);
+  const clr = Number($('milkClr').value);
+  const rate = Number($('milkRate').value);
+
+  if (!qty || !rate) {
+    alert('Liter aur Rate sahi se bharein!');
+    return;
+  }
+
+  const entryDate = $('milkDate').value || today;
+  const entryShift = $('milkShift').value || shift;
+  const duplicateEntry = entries.find(e =>
+    String(e.code) === String(code) &&
+    e.date === entryDate &&
+    (e.shift || 'Morning') === entryShift
+  );
+  if (duplicateEntry) {
+    const proceed = confirm(
+      `${c.name} ki ${entryDate} ki ${entryShift} entry pehle se saved hai.\n\nKya aap phir bhi ek aur entry save karna chahte hain?`
+    );
+    if (!proceed) return;
+  }
+
+  const milkEntry = {
+    id: Date.now().toString(),
+    code,
+    name: c ? c.name : '',
+    date: entryDate,
+    shift: entryShift,
+    qty,
+    fat,
+    clr,
+    snf: Number($('milkSnf')?.value) || 0,
+    rate,
+    amount: qty * rate
+  };
+
+  entries.push(milkEntry);
+  persist();
+  // Keep the selected date; after Morning save, move directly to Evening.
+  resetMilkForm(true, entryShift === 'Morning' ? 'Evening' : 'Evening');
+  dashboard();
+  renderMilkEntries();
+  const toast = document.createElement('div');
+  toast.textContent = '✓ Milk Entry Save Ho Gayi!';
+  toast.style.cssText = 'position:fixed;top:25px;left:50%;transform:translateX(-50%);background:#13864c;color:white;padding:15px 24px;border-radius:12px;font-size:16px;font-weight:bold;box-shadow:0 4px 15px #0003;z-index:99999;white-space:nowrap;';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+function resetMilkForm(keepSelectedDate = false, nextShift = null) {
+  const selectedDate = $('milkDate')?.value || today;
+  ['milkQty', 'milkFat', 'milkClr', 'milkSnf', 'milkTotal', 'milkRate'].forEach(id => {
+    if ($(id)) $(id).value = '';
+  });
+  $('milkDate').value = keepSelectedDate ? selectedDate : new Date().toISOString().slice(0,10);
+  updateMilkDateLabel();
+  setMilkShift(nextShift || shift);
+  calculateMilkRates();
+}
+
+function renderMilkEntries() {
+  const box = document.getElementById('milkEntryList');
+  if (!box) return;
+  if (!entries.length) {
+    box.innerHTML = '<p class="empty">Abhi koi milk entry nahi hai.</p>';
+    return;
+  }
+  box.innerHTML = entries.map((e, i) => `
+    <div style="padding:10px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <strong>${escapeHtml(e.name || '')} - ${escapeHtml(e.shift || '')}</strong>
+        <p style="margin:3px 0;font-size:12px;color:#666">${escapeHtml(e.date || '')} | L: ${e.qty} | Fat: ${e.fat} | Rate: ₹${e.rate}</p>
+      </div>
+        <div style="text-align:right">
+        <strong>₹${Number(e.amount || 0).toFixed(2)}</strong><br>
+        <button style="background:none;border:none;color:#13864c;font-size:12px;cursor:pointer;margin-right:8px;" onclick="editMilkEntry('${e.id}')">Edit</button>
+        <button style="background:none;border:none;color:red;font-size:12px;cursor:pointer" onclick="deleteMilkEntry('${e.id}')">Delete</button>
+      </div>
+    </div>
+  `).reverse().join('');
+}
+function editMilkEntry(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  
+  $('milkDate').value = e.date;
+  setMilkShift(e.shift || 'Morning');
+  if ($('milkCustomer')) $('milkCustomer').value = e.code;
+  if ($('milkQty')) $('milkQty').value = e.qty;
+  if ($('milkFat')) $('milkFat').value = e.fat;
+  if ($('milkClr')) $('milkClr').value = e.clr || '';
+  if ($('milkRate')) $('milkRate').value = e.rate;
+  if ($('milkTotal')) $('milkTotal').value = e.amount;
+
+  entries = entries.filter(x => x.id !== id);
+  persist();
+  renderMilkEntries();
+  dashboard();
+  
+  openCollectionTab('milkCollection');
+  showToast('Entry edit ke liye load ho gayi hai!');
+}
+
+
+function deleteMilkEntry(id) {
+  if (confirm('Delete this entry?')) {
+    entries = entries.filter(e => String(e.id) !== String(id));
+    persist();
+    renderMilkEntries();
+    renderCollectionSummary();
+    dashboard();
+    showToast('Entry delete ho gayi hai.');
+  }
+}
+
+function dashboard() {
+  const dateToday = new Date().toISOString().slice(0,10);
+
+  const activeCustomers = customers.filter(c => !c.status || c.status === 'Active');
+  const sellerCount = activeCustomers.filter(c => (c.type || 'Seller') === 'Seller').length;
+  const buyerCount = activeCustomers.filter(c => c.type === 'Buyer').length;
+
+  if ($('dashboardSellerCount')) $('dashboardSellerCount').textContent = sellerCount;
+  if ($('dashboardBuyerCount')) $('dashboardBuyerCount').textContent = buyerCount;
+
+  if ($('dashboardDate')) {
+    $('dashboardDate').textContent = new Date().toLocaleDateString('en-IN', {
+      weekday:'short',
+      day:'numeric',
+      month:'short',
+      year:'numeric'
+    }) + ' · ' + shift + ' Shift';
+  }
+
+  const targetType = dashboardMode === 'Distribution' ? 'Buyer' : 'Seller';
+
+  const rows = entries.filter(e => {
+    const customer = customers.find(c => c.code === e.code);
+    const customerType = customer ? (customer.type || 'Seller') : 'Seller';
+
+    return e.date === dateToday &&
+      (period === 'Total' || e.shift === period) &&
+      customerType === targetType;
+  });
+
+  const qty = rows.reduce((s, e) => s + e.qty, 0);
+  const amt = rows.reduce((s, e) => s + e.amount, 0);
+  const avg = k => qty ? rows.reduce((s, e) => s + e[k] * e.qty, 0) / qty : 0;
+
+  if ($('litres')) $('litres').textContent = qty.toFixed(2);
+  if ($('amount')) $('amount').textContent = '₹ ' + amt.toFixed(2);
+    // Average Fat (Weighted Average)
+    const avgFat = qty ? rows.reduce((s, e) => s + (Number(e.fat) || 0) * (Number(e.qty) || 0), 0) / qty : 0;
+  if ($('fat')) $('fat').textContent = avgFat.toFixed(2);
+
+  // Average CLR (Weighted Average)
+  const avgClr = qty ? rows.reduce((s, e) => s + (Number(e.clr) || 0) * (Number(e.qty) || 0), 0) / qty : 0;
+  if ($('clr')) $('clr').textContent = avgClr.toFixed(2);
+
+  // Average SNF saved entry values se nikalein; dashboard par dobara formula na lagayein.
+  const snfRows = rows.filter(e => Number(e.qty) > 0);
+  const snfQty = snfRows.reduce((sum, e) => sum + (Number(e.qty) || 0), 0);
+  const avgSnf = snfQty
+    ? snfRows.reduce((sum, e) => {
+        const savedSnf = e.snf !== undefined && e.snf !== null && e.snf !== ''
+          ? Number(e.snf)
+          : ((Number(e.clr) || 0) / 4) + (0.2 * (Number(e.fat) || 0)) + 0.14;
+        return sum + (Number.isFinite(savedSnf) ? savedSnf : 0) * (Number(e.qty) || 0);
+      }, 0) / snfQty
+    : 0;
+  if ($('snf')) $('snf').textContent = avgSnf.toFixed(2);
+
+
+  if ($('rate')) $('rate').textContent = qty ? '₹ ' + (amt / qty).toFixed(2) : '₹ 0';
+
+  const cowSamples = rows.filter(e => {
+    const customer = customers.find(c => c.code === e.code);
+    return customer && customer.cattle === 'Cow';
+  }).length;
+
+  const buffaloSamples = rows.filter(e => {
+    const customer = customers.find(c => c.code === e.code);
+    return !customer || customer.cattle !== 'Cow';
+  }).length;
+
+  if ($('dashboardSamples')) {
+    $('dashboardSamples').textContent = `${cowSamples} Cow + ${buffaloSamples} Buffalo = ${rows.length} Sample(s)`;
+  }
+
+  if ($('recent')) {
+    $('recent').innerHTML = entries.length
+      ? '<table><tr><th>Date</th><th>Customer</th><th>Shift</th><th>Litres</th><th>Amount</th></tr>' +
+        entries.slice(-8).reverse().map(e =>
+          `<tr><td>${escapeHtml(e.date)}</td><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.shift)}</td><td>${e.qty}</td><td>₹ ${e.amount.toFixed(2)}</td></tr>`
+        ).join('') +
+        '</table>'
+      : '<div class="empty">Milk Entry</div>';
+  }
+}
+
+function showTotalCollection() {
+  const from = $('totalFromDate').value;
+  const to = $('totalToDate').value;
+  const rows = entries.filter(e => e.date >= from && e.date <= to);
+  const totalQ = rows.reduce((s, e) => s + e.qty, 0);
+  const totalA = rows.reduce((s, e) => s + e.amount, 0);
+  $('totalMilkReport').innerHTML = `Total Litres: <strong>${totalQ.toFixed(2)} L</strong>`;
+  $('totalAmountReport').innerHTML = `Total Amount: <strong>₹ ${totalA.toFixed(2)}</strong>`;
+}
+
+let csShift = 'All';
+function setCsShift(value) {
+  csShift = value;
+  ['All','Morning','Evening'].forEach(v => {
+    const id = v === 'All' ? 'csAllBtn' : v === 'Morning' ? 'csMorningBtn' : 'csEveningBtn';
+    const b = $(id); if (b) b.className = v === value ? 'primary' : 'secondary';
+  });
+  renderCollectionSummary();
+}
+function renderCollectionSummary() {
+  const dateEl = $('csDate'); if (!dateEl) return;
+  const date = dateEl.value;
+  const rows = entries.filter(e => e.date === date && (csShift === 'All' || (e.shift || 'Morning') === csShift));
+  const totalQ = rows.reduce((s,e) => s + Number(e.qty || 0),0);
+  const totalA = rows.reduce((s,e) => s + Number(e.amount || 0),0);
+  const avg = key => { const vals = rows.filter(e => e[key] !== undefined && e[key] !== null && e[key] !== '').map(e => Number(e[key])); return vals.length ? vals.reduce((s,v) => s + v,0) / vals.length : 0; };
+  $('csTotals').innerHTML = `<div class="cs-total-card"><span>Entries</span><strong>${rows.length}</strong></div><div class="cs-total-card"><span>Total Milk</span><strong>${totalQ.toFixed(2)} L</strong></div><div class="cs-total-card"><span>Total Amt</span><strong>₹${totalA.toFixed(0)}</strong></div><div class="cs-total-card"><span>Avg Fat</span><strong>${avg('fat').toFixed(2)}</strong></div><div class="cs-total-card"><span>Avg CLR</span><strong>${avg('clr').toFixed(2)}</strong></div><div class="cs-total-card"><span>Avg SNF</span><strong>${avg('snf').toFixed(2)}</strong></div>`;
+  const body = rows.length ? rows.map(e => {
+    const c = customers.find(x => String(x.code) === String(e.code));
+    // Summary sirf saved values dikhata hai; yahan SNF dobara calculate nahi hota.
+    const snf = e.snf !== undefined && e.snf !== null && e.snf !== ''
+      ? Number(e.snf).toFixed(2)
+      : '';
+    const entryName = e.name || c?.name || e.code || '-';
+    return `<tr class="cs-swipe-row" ontouchstart="csTouchStart(event)" ontouchend="csTouchEnd(event, this)" onpointerdown="csPointerDown(event)" onpointerup="csPointerUp(event, this)"><td title="${escapeHtml(entryName)}">${escapeHtml(entryName)}</td><td>${Number(e.qty || 0).toFixed(2)}</td><td>${Number(e.fat || 0).toFixed(1)}</td><td>${Number(e.clr || 0).toFixed(1)}</td><td>${snf}</td><td class="cs-amt-cell"><span class="cs-amt">₹${Number(e.amount || 0).toFixed(0)}</span><span class="cs-row-actions"><button type="button" onclick="editMilkEntry('${String(e.id).replace(/'/g, '')}')">Edit</button><button type="button" onclick="deleteMilkEntry('${String(e.id).replace(/'/g, '')}')">Del</button></span></td></tr>`;
+  }).join('') : '<tr><td colspan="6" style="text-align:center">No collection for this date</td></tr>' ;
+  $('csSummaryResult').innerHTML = `<table class="cs-table"><thead><tr><th>Name</th><th>Milk</th><th>Fat</th><th>CLR</th><th>SNF</th><th>Amt</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>Total</td><td>${totalQ.toFixed(2)}</td><td>${avg('fat').toFixed(1)}</td><td>${avg('clr').toFixed(1)}</td><td>-</td><td>₹${totalA.toFixed(0)}</td></tr></tfoot></table>`;
+}
+let csTouchX = 0;
+function csTouchStart(event) { csTouchX = event.changedTouches[0].clientX; }
+function csTouchEnd(event, row) { if (csTouchX - event.changedTouches[0].clientX > 35) row.classList.add('cs-swiped'); else if (event.changedTouches[0].clientX - csTouchX > 35) row.classList.remove('cs-swiped'); }
+function csPointerDown(event) { if (event.pointerType === 'mouse') csTouchX = event.clientX; }
+function csPointerUp(event, row) { if (event.pointerType === 'mouse') { const dx = csTouchX - event.clientX; if (dx > 35) row.classList.add('cs-swiped'); else if (dx < -35) row.classList.remove('cs-swiped'); } }
+function collectionSummaryUnlocked(feature) { return true; }
+function runCsExport(action) {
+  const area = $('csSummaryResult');
+  if (action === 'print') { const w = window.open('', '_blank'); if (!w) return alert('Pop-up allow karein.'); w.document.write('<html><head><title>Collection Summary</title></head><body>' + area.innerHTML + '</body></html>'); w.document.close(); w.print(); return; }
+  if (typeof html2pdf === 'undefined') { alert('PDF सुविधा लोड नहीं हुई।'); return; }
+  const opt = { margin: 8, filename: 'Collection-Summary.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+  html2pdf().set(opt).from(area).outputPdf('blob').then(blob => {
+    if (action === 'share' && navigator.share && navigator.canShare) { const file = new File([blob], 'Collection-Summary.pdf', {type:'application/pdf'}); if (navigator.canShare({files:[file]})) return navigator.share({files:[file], title:'Collection Summary'}); }
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='Collection-Summary.pdf'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }).catch(()=>alert('PDF बनाते समय समस्या आई।'));
+}
+
+
+function customerBalanceBeforeDate(code, fromDate, fromShift = 'Morning') {
+  const milkBefore = entries.filter(e => {
+    if (String(e.code) !== String(code)) return false;
+    if (String(e.date || '') < String(fromDate || '')) return true;
+    if (String(e.date || '') > String(fromDate || '')) return false;
+    return fromShift === 'Evening' && (e.shift || 'Morning') === 'Morning';
+  });
+  const advancesBefore = advanceEntries.filter(a => String(a.code) === String(code) && String(a.date || '') < String(fromDate || ''));
+  const milkAmount = milkBefore.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const paid = advancesBefore.filter(a => a.type === 'Pay').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  const received = advancesBefore.filter(a => a.type === 'Receive').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  return milkAmount - paid + received;
+}
+
+function customerCurrentBalance(code) {
+  const milkAmount = entries.filter(e => String(e.code) === String(code)).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const list = advanceEntries.filter(a => String(a.code) === String(code));
+  const paid = list.filter(a => a.type === 'Pay').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  const received = list.filter(a => a.type === 'Receive').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  return milkAmount - paid + received;
+}
+
+function balanceLabel(value) {
+  const amount = Math.abs(Number(value || 0)).toFixed(2);
+  if (value > 0) return 'देय ₹' + amount;
+  if (value < 0) return 'लेना ₹' + amount;
+  return 'बकाया ₹0.00';
+}
+
+function makeBill(options = null) {
+  const leaderPreview = !!(options && options.leaderRate);
+  const code = leaderPreview ? options.code : $('billCustomer').value;
+  const c = customers.find(x => x.code === code);
+  const from = leaderPreview ? options.from : $('billFrom').value;
+  const to = leaderPreview ? options.to : $('billTo').value;
+  const fromShift = leaderPreview ? options.fromShift : $('billFromShift').value;
+  const toShift = leaderPreview ? options.toShift : $('billToShift').value;
+
+  const rows = (leaderPreview ? [...options.rows] : entries.filter(e => {
+    if (e.code !== code || e.date < from || e.date > to) return false;
+    const shiftOrder = e.shift === 'Morning' ? 1 : 2;
+    const fromOrder = fromShift === 'Morning' ? 1 : 2;
+    const toOrder = toShift === 'Morning' ? 1 : 2;
+    if (e.date === from && shiftOrder < fromOrder) return false;
+    if (e.date === to && shiftOrder > toOrder) return false;
+    return true;
+  })).sort((a, b) => {
+    const dateCompare = String(a.date || '').localeCompare(String(b.date || ''));
+    if (dateCompare !== 0) return dateCompare;
+    const shiftA = (a.shift || 'Morning') === 'Morning' ? 1 : 2;
+    const shiftB = (b.shift || 'Morning') === 'Morning' ? 1 : 2;
+    return shiftA - shiftB;
+  });
+  const custAdvances = leaderPreview ? [] :
+    advanceEntries.filter(a => a.code === code && a.date >= from && a.date <= to);
+
+  const totalQ = rows.reduce((s, e) => s + Number(e.qty || 0), 0);
+  const totalA = rows.reduce((s, e) => s + Number(e.amount || 0), 0);
+
+  const totalAdvancePaid = custAdvances.filter(a => a.type === 'Pay').reduce((s, a) => s + a.amount, 0);
+  const totalAdvanceReceived = custAdvances.filter(a => a.type === 'Receive').reduce((s, a) => s + a.amount, 0);
+  const currentPeriodBalance = totalA - totalAdvancePaid + totalAdvanceReceived;
+  const previousBalance = leaderPreview ? 0 : customerBalanceBeforeDate(code, from, fromShift);
+  const netPayable = previousBalance + currentPeriodBalance;
+
+  const dairyName = localStorage.getItem('rajput_dairy_name') || 'Rajput Dairy';
+
+  let html = `<div id="billPrintArea" style="background:#fff; padding:10px; width:100%; box-sizing:border-box; color:#000; font-family:Arial, sans-serif;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ddd; padding-bottom:10px; margin-bottom:15px;">
+      <div>
+        <h2 style="margin:0; color:#13864c;">${escapeHtml(dairyName)}</h2>
+      </div>
+      <div style="text-align:right;">
+        <p style="margin:0; font-size:14px;"><strong>Date:</strong> ${escapeHtml(from)} - ${escapeHtml(to)}</p>
+      </div>
+    </div>
+
+    <h3 style="margin:10px 0; font-size:16px;">${escapeHtml(code)} - ${escapeHtml(c ? c.name : 'Customer')}</h3>
+
+    <div style="border:1px solid #ccc; border-radius:6px; overflow:hidden; margin-bottom:15px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+        <thead>
+          <tr style="background:#f4f4f4;">
+            <th style="border:1px solid #ccc; padding:6px;">Milk Amount</th>
+            <th style="border:1px solid #ccc; padding:6px;">Advance Paid</th>
+            <th style="border:1px solid #ccc; padding:6px;">Advance Received</th>
+            <th style="border:1px solid #ccc; padding:6px;">Previous Balance</th>
+            <th style="border:1px solid #ccc; padding:6px;">Current Period</th>
+            <th style="border:1px solid #ccc; padding:6px;">Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #ccc; padding:6px;">₹${totalA.toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px;">₹${totalAdvancePaid.toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px;">₹${totalAdvanceReceived.toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px;">₹${previousBalance.toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px;">₹${currentPeriodBalance.toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px; font-weight:bold;">${balanceLabel(netPayable)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:10px 0 5px; font-size:14px;">Milk Detail</h4>
+    <p style="font-size:12px; margin-bottom:10px;">Total Milk: <strong>${totalQ.toFixed(2)} L</strong> | Total Amount: <strong>₹${totalA.toFixed(2)}</strong></p>
+
+    <div style="border:1px solid #ccc; border-radius:6px; overflow:hidden; margin-bottom:15px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+        <thead>
+          <tr style="background:#f4f4f4;">
+            <th rowspan="2" style="border:1px solid #ccc; padding:6px;">Date</th>
+            <th colspan="5" style="border:1px solid #ccc; padding:6px;">Morning / Evening Entries</th>
+            <th rowspan="2" style="border:1px solid #ccc; padding:6px;">Total ₹</th>
+          </tr>
+          <tr style="background:#f4f4f4;">
+            <th style="border:1px solid #ccc; padding:4px;">Liter</th>
+            <th style="border:1px solid #ccc; padding:4px;">Fat</th>
+            <th style="border:1px solid #ccc; padding:4px;">CLR</th>
+            <th style="border:1px solid #ccc; padding:4px;">Rate</th>
+            <th style="border:1px solid #ccc; padding:4px;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  if (rows.length) {
+    rows.forEach(e => {
+      html += `<tr>
+        <td style="border:1px solid #ccc; padding:5px;">${escapeHtml(e.date)} (${e.shift})</td>
+        <td style="border:1px solid #ccc; padding:5px;">${e.qty}</td>
+        <td style="border:1px solid #ccc; padding:5px;">${e.fat}</td>
+        <td style="border:1px solid #ccc; padding:5px;">${e.clr || '-'}</td>
+        <td style="border:1px solid #ccc; padding:5px;">${e.rate}</td>
+        <td style="border:1px solid #ccc; padding:5px;">₹${e.amount.toFixed(2)}</td>
+        <td style="border:1px solid #ccc; padding:5px; font-weight:bold;">₹${e.amount.toFixed(2)}</td>
+      </tr>`;
+    });
+  } else {
+    html += `<tr><td colspan="7" style="border:1px solid #ccc; padding:10px; text-align:center;">No milk entries found in this date range.</td></tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+
+  if (custAdvances.length) {
+    html += `<h4 style="margin:10px 0 5px; font-size:14px;">Advance / Payment History</h4>
+    <div style="border:1px solid #ccc; border-radius:6px; overflow:hidden; margin-bottom:15px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+        <thead>
+          <tr style="background:#f4f4f4;">
+            <th style="border:1px solid #ccc; padding:6px;">Date</th>
+            <th style="border:1px solid #ccc; padding:6px;">Type</th>
+            <th style="border:1px solid #ccc; padding:6px;">Amount</th>
+            <th style="border:1px solid #ccc; padding:6px;">Remark</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    custAdvances.forEach(a => {
+      html += `<tr>
+        <td style="border:1px solid #ccc; padding:5px;">${escapeHtml(a.date)}</td>
+        <td style="border:1px solid #ccc; padding:5px; color:${a.type === 'Pay' ? 'red' : 'green'}; font-weight:bold;">${a.type}</td>
+        <td style="border:1px solid #ccc; padding:5px;">₹${a.amount.toFixed(2)}</td>
+        <td style="border:1px solid #ccc; padding:5px;">${escapeHtml(a.remark || '-')}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  html += `</div>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button type="button" onclick="downloadCustomBillPDF()" style="flex:1;background:#198754;color:white;padding:12px;border:0;border-radius:8px;cursor:pointer;font-weight:bold;">📥 Download PDF</button>
+            <button type="button" onclick="printCustomBill()" style="flex:1;background:#17a2b8;color:white;padding:12px;border:0;border-radius:8px;cursor:pointer;font-weight:bold;">🖨️ Print Bill</button>
+          </div>`;
+
+  const resultBox = leaderPreview ? $('leaderRateBillResult') : $('billResult');
+  if (resultBox) resultBox.innerHTML = html;
+}
+
+function downloadCustomBillPDF() {
+  const element = document.getElementById('billPrintArea');
+
+  if (!element) {
+    alert('Pehle bill generate karein!');
+    return;
+  }
+
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library load nahi hui!');
+    return;
+  }
+
+  const oldStyle = element.getAttribute('style') || '';
+
+  element.style.width = '180mm';
+  element.style.maxWidth = 'none';
+  element.style.margin = '0';
+  element.style.boxSizing = 'border-box';
+
+  html2pdf().set({
+    margin: [8, 8, 8, 8],
+    filename: 'Customer_Bill.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: 794,
+      scrollY: 0
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    },
+    pagebreak: { mode: ['css', 'legacy'] }
+  }).from(element).save().then(() => {
+    element.setAttribute('style', oldStyle);
+  }).catch(error => {
+    element.setAttribute('style', oldStyle);
+    console.error(error);
+    alert('PDF banane mein dikkat aayi.');
+  });
+}
+
+function printCustomBill() {
+  const element = document.getElementById('billPrintArea');
+  if (!element) { alert('Pehle bill generate karein!'); return; }
+  const win = window.open('', '_blank');
+  if (!win) { alert('Popup blocked! Browser mein pop-ups allow karein.'); return; }
+  win.document.write('<!DOCTYPE html><html><head><title>Customer Bill</title><style>body{font-family:Arial;padding:15px;color:black;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid black;padding:6px;text-align:center;}</style></head><body>' + element.innerHTML + '</body></html>');
+  win.document.close();
+  win.setTimeout(() => { win.focus(); win.print(); }, 500);
+}
+
+function changeReportMonth(amount) {
+  const input = $('reportMonth');
+  if (!input) return;
+  const current = input.value || new Date().toISOString().slice(0, 7);
+  const [year, month] = current.split('-').map(Number);
+  const next = new Date(year, month - 1 + amount, 1);
+  input.value = next.getFullYear() + '-' + String(next.getMonth() + 1).padStart(2, '0');
+}
+
+function toggleReportCustomer() {
+  const scope = document.querySelector('input[name="reportScope"]:checked');
+  const customerWrap = $('reportCustomerWrap');
+  if (!customerWrap) return;
+  customerWrap.classList.toggle('hidden', !scope || scope.value !== 'Customer');
+  populateReportCustomers();
+}
+
+function populateReportCustomers() {
+  const select = $('reportCustomer');
+  if (!select) return;
+  const previous = select.value;
+  select.innerHTML = '<option value="">Select customer</option>' +
+    customers.map(c =>
+      `<option value="${escapeAttr(c.code)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`
+    ).join('');
+
+  if (customers.some(c => c.code === previous)) {
+    select.value = previous;
+  } else if (customers.length === 1) {
+    select.value = customers[0].code;
+  }
+}
+
+function makeReport() {
+  const month = $('reportMonth').value;
+  if (!month) {
+    alert('Report month select karein.');
+    return;
+  }
+
+  const scopeInput = document.querySelector('input[name="reportScope"]:checked');
+  const scope = scopeInput ? scopeInput.value : 'Customer';
+  const customerCode = scope === 'Customer' ? $('reportCustomer').value : '';
+
+  if (scope === 'Customer' && !customerCode) {
+    alert('Customer select karein.');
+    return;
+  }
+
+  const [year, monthNumber] = month.split('-').map(Number);
+  const from = `${month}-01`;
+  const to = `${year}-${String(monthNumber).padStart(2, '0')}-${String(new Date(year, monthNumber, 0).getDate()).padStart(2, '0')}`;
+
+  const customer = customers.find(c => c.code === customerCode);
+  const reportEntries = entries.filter(e => e.date >= from && e.date <= to && (scope === 'Dairy' || e.code === customerCode));
+  const reportAdvances = advanceEntries.filter(a => a.date >= from && a.date <= to && (scope === 'Dairy' || a.code === customerCode));
+
+  const totalMilk = reportEntries.reduce((sum, e) => sum + Number(e.qty || 0), 0);
+  const milkAmount = reportEntries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const advancePaid = reportAdvances.filter(a => a.type === 'Pay').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  const advanceReceived = reportAdvances.filter(a => a.type === 'Receive').reduce((sum, a) => sum + Number(a.amount || 0), 0);
+  const netPayable = milkAmount - advancePaid + advanceReceived;
+
+  const selectedSections = Array.from(document.querySelectorAll('input[name="reportSection"]:checked')).map(input => input.value);
+
+  if (!selectedSections.length) {
+    alert('Kam se kam ek report section select karein.');
+    return;
+  }
+
+  const dairyName = localStorage.getItem('rajput_dairy_name') || 'Rajput Dairy Milk';
+  const customerHeading = scope === 'Dairy' ? 'All Customers' : `${escapeHtml(customer.name || '')} (${escapeHtml(customer.code || '')})`;
+
+  let html = `
+  <div id="reportPrintArea" class="report-output" style="padding:8px;font-family:Arial,sans-serif;font-size:11px;line-height:1.25;">
+      <h2>${escapeHtml(dairyName)} — Dairy Report</h2>
+      <p><strong>Month:</strong> ${escapeHtml(month)}</p>
+      <p><strong>Report:</strong> ${customerHeading}</p>
+  `;
+
+  if (selectedSections.includes('bill')) {
+    html += `
+      <h3>Bill</h3>
+      <p>Total Milk: <strong>${totalMilk.toFixed(2)} L</strong></p>
+      <p>Milk Amount: <strong>₹${milkAmount.toFixed(2)}</strong></p>
+      <p>Advance Paid: <strong>₹${advancePaid.toFixed(2)}</strong></p>
+      <p>Advance Received: <strong>₹${advanceReceived.toFixed(2)}</strong></p>
+      <p>Net Payable: <strong>₹${netPayable.toFixed(2)}</strong></p>
+    `;
+  }
+
+  if (selectedSections.includes('milk')) {
+    html += `
+      <h3>Milk Detail</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Customer</th><th>Shift</th>
+            <th>Liter</th><th>Fat</th><th>CLR</th><th>Rate</th><th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reportEntries.length ? reportEntries.map(e => `
+            <tr>
+              <td>${escapeHtml(e.date)}</td>
+              <td>${escapeHtml(e.name || '')}</td>
+              <td>${escapeHtml(e.shift || '')}</td>
+              <td>${Number(e.qty || 0).toFixed(2)}</td>
+              <td>${Number(e.fat || 0).toFixed(2)}</td>
+              <td>${Number(e.clr || 0).toFixed(2)}</td>
+              <td>₹${Number(e.rate || 0).toFixed(2)}</td>
+              <td>₹${Number(e.amount || 0).toFixed(2)}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="8">No milk records for this month.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+  }
+
+  if (selectedSections.includes('payment')) {
+    html += `
+      <h3>Payment Statement</h3>
+      <p>This statement uses the app's existing Pay / Receive advance records.</p>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Customer</th><th>Type</th><th>Amount</th><th>Remark</th></tr>
+        </thead>
+        <tbody>
+          ${reportAdvances.length ? reportAdvances.map(a => `
+            <tr>
+              <td>${escapeHtml(a.date)}</td>
+              <td>${escapeHtml(a.name || '')} (${escapeHtml(a.code || '')})</td>
+              <td>${escapeHtml(a.type || '')}</td>
+              <td>₹${Number(a.amount || 0).toFixed(2)}</td>
+              <td>${escapeHtml(a.remark || '-')}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="5">No payment records for this month.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+  }
+
+  if (selectedSections.includes('loan')) {
+    html += ` <h3>Loan Statement</h3> <p>No loan records are available in the current app.</p> `;
+  }
+
+  if (selectedSections.includes('advance')) {
+    html += `
+      <h3>Advance Payment</h3>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Customer</th><th>Type</th><th>Amount</th><th>Remark</th></tr>
+        </thead>
+        <tbody>
+          ${reportAdvances.length ? reportAdvances.map(a => `
+            <tr>
+              <td>${escapeHtml(a.date)}</td>
+              <td>${escapeHtml(a.name || '')} (${escapeHtml(a.code || '')})</td>
+              <td>${escapeHtml(a.type || '')}</td>
+              <td>₹${Number(a.amount || 0).toFixed(2)}</td>
+              <td>${escapeHtml(a.remark || '-')}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="5">No advance records for this month.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+  }
+
+  if (selectedSections.includes('product')) {
+    html += ` <h3>Product Detail</h3> <p>No product records are available in the current app.</p> `;
+  }
+
+  html += '</div>';
+  $('reportResult').innerHTML = html;
+
+  if (typeof html2pdf !== 'undefined') {
+    const reportElement = $('reportPrintArea');
+    html2pdf().set({
+  margin: [6, 6, 6, 6],
+  filename: `Rajput_Dairy_Report_${month}.pdf`,
+  image: { type: 'jpeg', quality: 0.98 },
+  html2canvas: {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    windowWidth: reportElement.scrollWidth,
+    windowHeight: reportElement.scrollHeight,
+    scrollY: 0
+  },
+  jsPDF: {
+    unit: 'mm',
+    format: 'a4',
+    orientation: 'portrait'
+  },
+  pagebreak: {
+    mode: ['css', 'legacy'],
+    avoid: ['tr']
+  }
+}).from(reportElement).save();
+  }
+}
+
+function openAdvanceForm() {
+  refreshAdvanceCustomerOptions();
+  $('advanceDate').value = today;
+  $('advanceCode').value = '';
+  $('advanceName').value = '';
+  $('advanceCustomerType').value = '';
+  $('advanceAmount').value = '';
+  $('advanceRemark').value = '';
+  show('advanceForm');
+}
+
+function setAdvanceType(type) {
+  currentAdvanceType = type;
+  if (type === 'Pay') {
+    $('advancePayBtn').className = 'primary';
+    $('advanceReceiveBtn').className = 'secondary';
+  } else {
+    $('advancePayBtn').className = 'secondary';
+    $('advanceReceiveBtn').className = 'primary';
+  }
+}
+
+function refreshAdvanceCustomerOptions() {
+  const list = $('advanceCustomerOptions');
+  if (!list) return;
+  list.innerHTML = customers.map(c => `<option value="${escapeAttr(c.code)}">${escapeHtml(c.name || '')}</option><option value="${escapeAttr(c.name || '')}">${escapeHtml(c.code || '')}</option>`).join('');
+}
+function findAdvanceCustomer() {
+  const entered = $('advanceCode').value.trim();
+  const normalized = entered.toLocaleLowerCase();
+  let c = customers.find(x => String(x.code || '').toLocaleLowerCase() === normalized)
+       || customers.find(x => String(x.name || '').trim().toLocaleLowerCase() === normalized);
+  if (!c) {
+    const matches = customers.filter(x => String(x.name || '').toLocaleLowerCase().includes(normalized) || String(x.code || '').toLocaleLowerCase().includes(normalized));
+    if (normalized && matches.length === 1 && (String(matches[0].name || '').toLocaleLowerCase() === normalized || String(matches[0].code || '').toLocaleLowerCase() === normalized)) c = matches[0];
+  }
+  if (c) {
+    $('advanceCode').value = c.code;
+    $('advanceName').value = c.name;
+    $('advanceCustomerType').value = c.type || 'Seller';
+  } else {
+    $('advanceName').value = '';
+    $('advanceCustomerType').value = '';
+  }
+}
+
+function saveAdvance() {
+  const code = $('advanceCode').value.trim();
+  const amount = parseFloat($('advanceAmount').value);
+  if (!code || !amount) { alert('Code aur Amount sahi se bharein!'); return; }
+  const c = customers.find(x => x.code === code);
+  advanceEntries.push({
+    id: Date.now().toString(),
+    date: $('advanceDate').value || today,
+    type: currentAdvanceType,
+    code,
+    name: c ? c.name : '',
+    customerType: c ? (c.type || 'Seller') : 'Seller',
+    amount,
+    remark: $('advanceRemark').value.trim()
+  });
+  localStorage.setItem('rajput_advance_entries', JSON.stringify(advanceEntries));
+  alert('Advance payment save ho gaya!');
+  show('advance');
+}
+
+function changeAdvanceMonth(direction) {
+  const input = $('advanceMonth');
+  if (!input) return;
+  const current = input.value || new Date().toISOString().slice(0, 7);
+  const [year, month] = current.split('-').map(Number);
+  const next = new Date(year, month - 1 + direction, 1);
+  input.value = next.getFullYear() + '-' + String(next.getMonth() + 1).padStart(2, '0');
+  renderAdvances();
+}
+
+function renderAdvances() {
+  const box = $('advanceList');
+  if (!box) return;
+
+  const searchText = ($('advanceSearch').value || '').toLowerCase();
+  const partyFilter = ($('advancePartyFilter').value || 'All');
+  const kindFilter = ($('advanceKindFilter').value || 'All');
+  const monthFilter = ($('advanceMonth').value || '');
+  let filtered = advanceEntries.filter(a => {
+    const matchesSearch = !searchText || (a.name || '').toLowerCase().includes(searchText) || (a.code || '').toLowerCase().includes(searchText);
+    const matchesParty = partyFilter === 'All' || a.customerType === partyFilter;
+    const matchesKind = kindFilter === 'All' || a.type === kindFilter;
+    const matchesMonth = !monthFilter || a.date.startsWith(monthFilter);
+    return matchesSearch && matchesParty && matchesKind && matchesMonth;
+  });
+
+  const balanceCustomers = customers.filter(c => {
+    const matchesSearch = !searchText || (c.name || '').toLowerCase().includes(searchText) || String(c.code || '').toLowerCase().includes(searchText);
+    const matchesParty = partyFilter === 'All' || (c.type || 'Seller') === partyFilter;
+    return matchesSearch && matchesParty;
+  });
+  const balancesHtml = balanceCustomers.map(c => {
+    const balance = customerCurrentBalance(c.code);
+    return `<div class="card" style="margin:6px 0;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+      <div><strong>${escapeHtml(c.name || '')} (${escapeHtml(c.code || '')})</strong><div style="font-size:11px;color:#777;">Previous / Current Balance</div></div>
+      <strong style="font-size:13px;color:${balance > 0 ? '#c62828' : balance < 0 ? '#168348' : '#555'};">${balanceLabel(balance)}</strong>
+    </div>`;
+  }).join('');
+  if (!filtered.length) {
+    box.innerHTML = balancesHtml + '<p class="empty">Is filter mein abhi koi advance record nahi hai.</p>';
+    return;
+  }
+  box.innerHTML = balancesHtml + filtered.map(a => `
+  <div class="card" style="margin:8px 0; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <strong>${escapeHtml(a.name)} (${escapeHtml(a.code)})</strong> - <span style="color:${a.type === 'Pay' ? 'red' : 'green'}">${a.type}</span>
+      <div style="font-size:12px; color:#666;">${escapeHtml(a.date)} | ${escapeHtml(a.remark || '')}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-weight:bold; font-size:15px; margin-bottom:4px;">₹ ${Number(a.amount || 0).toFixed(2)}</div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button style="background:none; border:none; color:#13864c; cursor:pointer; font-size:12px; padding:0;" onclick="editAdvance('${a.id}')">Edit</button>
+        <button style="background:none; border:none; color:red; cursor:pointer; font-size:12px; padding:0;" onclick="deleteAdvance('${a.id}')">Delete</button>
+      </div>
+    </div>
+  </div>
+`).join('');
+
+}
+
+
+
+function editAdvance(id) {
+  const a = advanceEntries.find(x => x.id === id);
+  if (!a) return;
+
+  if ($('advanceDate')) $('advanceDate').value = a.date || '';
+  if ($('advanceCustomer')) $('advanceCustomer').value = a.code || '';
+  if ($('advanceAmount')) $('advanceAmount').value = a.amount || '';
+  if ($('advanceType')) $('advanceType').value = a.type || 'Pay';
+  if ($('advanceRemark')) $('advanceRemark').value = a.remark || '';
+
+  advanceEntries = advanceEntries.filter(x => x.id !== id);
+  if (typeof persistAdvance === 'function') persistAdvance();
+  else if (typeof persist === 'function') persist();
+
+  renderAdvances();
+  if (typeof openAdvanceForm === 'function') openAdvanceForm();
+}
+
+function deleteAdvance(id) {
+  if (confirm('Kya aap is entry ko delete karna chahte hain?')) {
+    advanceEntries = advanceEntries.filter(x => x.id !== id);
+    if (typeof persistAdvance === 'function') persistAdvance();
+    else if (typeof persist === 'function') persist();
+
+    renderAdvances();
+  }
+}
+
+
+function onCustCodeInput() {
+  const value = $('cmCodeSearch').value.trim().toLowerCase();
+  const customer = customers.find(c =>
+    String(c.code).toLowerCase() === value ||
+    String(c.name || '').toLowerCase().includes(value)
+  );
+  if (customer) $('cmCustomerSelect').value = customer.code;
+  renderCustomerMilkData();
+}
+
+function setCmShift(value) {
+  cmShift = value;
+  $('cmMorningBtn').className = value === 'Morning' ? 'primary' : 'secondary';
+  $('cmEveningBtn').className = value === 'Evening' ? 'primary' : 'secondary';
+  renderCustomerMilkData();
+}
+
+function getCustomerMilkRows() {
+  const code = $('cmCustomerSelect').value;
+  const from = $('cmFromDate').value;
+  const to = $('cmToDate').value;
+
+  if (!code || !from || !to) return [];
+  return entries.filter(e => e.code === code && e.date >= from && e.date <= to);
+}
+
+function renderCustomerMilkData() {
+  if (!$('cmCustomerSelect')) return;
+  const rows = getCustomerMilkRows();
+  const visible = rows.filter(e => (e.shift || 'Morning') === cmShift);
+
+  $('cmTodayTableBody').innerHTML = visible.length ? visible.map(e => `
+    <tr>
+      <td>${escapeHtml(e.cattle || '-')}</td>
+      <td>${Number(e.qty || 0).toFixed(2)}</td>
+      <td>${Number(e.fat || 0).toFixed(2)}</td>
+      <td>${Number(e.clr || 0).toFixed(2)}</td>
+      <td>₹${Number(e.rate || 0).toFixed(2)}</td>
+      <td>₹${Number(e.amount || 0).toFixed(2)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="empty">No data available to display!</td></tr>';
+
+  const milk = rows.reduce((sum, e) => sum + Number(e.qty || 0), 0);
+  const amount = rows.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const dayCount = new Set(rows.map(e => e.date)).size;
+
+  $('cmTotalMilk').textContent = milk.toFixed(2);
+  $('cmTotalAmount').textContent = '₹ ' + amount.toFixed(2);
+  $('cmAvgMilk').textContent = (dayCount ? milk / dayCount : 0).toFixed(2);
+  $('cmAvgAmount').textContent = '₹ ' + (dayCount ? amount / dayCount : 0).toFixed(2);
+  $('cmAvgRate').textContent = '₹ ' + (milk ? amount / milk : 0).toFixed(2);
+}
+
+function customerMilkPDFHTML() {
+  const code = $('cmCustomerSelect').value;
+  const customer = customers.find(c => c.code === code);
+  if (!customer) {
+    alert('Pehle customer select karein!');
+    return null;
+  }
+
+  const rows = getCustomerMilkRows();
+  if (!rows.length) {
+    alert('Is date range mein koi milk record nahi hai!');
+    return null;
+  }
+
+  const from = $('cmFromDate').value;
+  const to = $('cmToDate').value;
+  const advances = advanceEntries.filter(a =>
+    String(a.code).trim() === String(code).trim() &&
+    a.date >= from &&
+    a.date <= to
+  );
+
+  const milkTotal = rows.reduce((s, e) => s + Number(e.qty || 0), 0);
+  const milkAmount = rows.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const paid = advances.filter(a => a.type === 'Pay').reduce((s, a) => s + Number(a.amount || 0), 0);
+  const received = advances.filter(a => a.type === 'Receive').reduce((s, a) => s + Number(a.amount || 0), 0);
+
+  const currentPeriodBalance = milkAmount - paid + received;
+  const previousBalance = customerBalanceBeforeDate(code, from, 'Morning');
+  const balance = previousBalance + currentPeriodBalance;
+  const payable = Math.max(0, balance);
+  const receivable = Math.max(0, -balance);
+  const dayCount = new Set(rows.map(e => e.date)).size;
+  const dairyName = localStorage.getItem('rajput_dairy_name') || 'Rajput Dairy Milk';
+  const money = n => Number(n || 0).toFixed(2);
+  const dateLabel = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+
+  const dates = [...new Set(rows.map(e => e.date))].sort();
+
+  let html = `
+  <div style="background:#fff;color:#111;padding:18px;font-family:Arial,sans-serif;width:100%;box-sizing:border-box;">
+    <div style="text-align:right;border-bottom:2px solid #888;padding-bottom:10px;">
+      <h2 style="margin:0;font-size:22px;">${escapeHtml(dairyName)}</h2>
+      <div style="margin-top:8px;font-weight:bold;">Date: ${dateLabel(from)} - ${dateLabel(to)}</div>
+    </div>
+
+    <h2 style="font-size:19px;margin:18px 0 12px;">${escapeHtml(code)} - ${escapeHtml(customer.name || 'Customer')}</h2>
+
+    <h3>Customer Bill</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:center;" border="1" cellpadding="6">
+      <tr>
+        <th>Milk Amount</th>
+        <th>Advance Paid</th>
+        <th>Advance Received</th>
+        <th>Previous Balance</th>
+        <th>Current Period</th>
+        <th>Closing Balance</th>
+      </tr>
+      <tr>
+        <td>₹${money(milkAmount)}</td>
+        <td>₹${money(paid)}</td>
+        <td>₹${money(received)}</td>
+        <td>₹${money(previousBalance)}</td>
+        <td>₹${money(currentPeriodBalance)}</td>
+        <td><b>${balanceLabel(balance)}</b></td>
+      </tr>
+    </table>
+
+    <h3>Milk Detail</h3>
+    <p style="font-size:12px;line-height:1.8;">
+      Previous Balance: <b>${balanceLabel(previousBalance)}</b> |
+      Current Period: <b>${balanceLabel(currentPeriodBalance)}</b><br>
+      Closing Balance: <b>${balanceLabel(balance)}</b><br>
+      Total Milk: <b>${money(milkTotal)} L</b> |
+      Total Amount: <b>₹${money(milkAmount)}</b><br>
+      Avg. Milk: <b>${money(dayCount ? milkTotal / dayCount : 0)} L/Day</b> |
+      Avg. Amount: <b>₹${money(dayCount ? milkAmount / dayCount : 0)}/Day</b> |
+      Avg. Rate: <b>₹${money(milkTotal ? milkAmount / milkTotal : 0)}</b>
+    </p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:10px;text-align:center;" border="1" cellpadding="5">
+      <tr>
+        <th rowspan="2">Date</th>
+        <th colspan="5">Morning</th>
+        <th colspan="5">Evening</th>
+        <th rowspan="2">Total</th>
+      </tr>
+      <tr>
+        ${['Liter','Fat','CLR','Rate','Amount','Liter','Fat','CLR','Rate','Amount'].map(x => `<th>${x}</th>`).join('')}
+      </tr>`;
+
+  const shiftData = (list) => list.length ? {
+    qty: list.reduce((s, e) => s + Number(e.qty || 0), 0),
+    fat: list.reduce((s, e) => s + Number(e.fat || 0), 0) / list.length,
+    clr: list.reduce((s, e) => s + Number(e.clr || 0), 0) / list.length,
+    rate: list.reduce((s, e) => s + Number(e.rate || 0), 0) / list.length,
+    amount: list.reduce((s, e) => s + Number(e.amount || 0), 0)
+  } : null;
+
+  const cell = (e, key) => e ? (key === 'amount' ? '₹' : '') + money(e[key]) : '-';
+
+  dates.forEach(date => {
+    const morning = shiftData(rows.filter(e => e.date === date && (e.shift || 'Morning') === 'Morning'));
+    const evening = shiftData(rows.filter(e => e.date === date && e.shift === 'Evening'));
+    const dayAmount = (morning?.amount || 0) + (evening?.amount || 0);
+
+    html += `<tr>
+      <td>${dateLabel(date)}</td>
+      ${['qty', 'fat', 'clr', 'rate', 'amount'].map(k => `<td>${cell(morning, k)}</td>`).join('')}
+      ${['qty', 'fat', 'clr', 'rate', 'amount'].map(k => `<td>${cell(evening, k)}</td>`).join('')}
+      <td>₹${money(dayAmount)}</td>
+    </tr>`;
+  });
+
+  const morningRows = rows.filter(e => (e.shift || 'Morning') === 'Morning');
+  const eveningRows = rows.filter(e => e.shift === 'Evening');
+
+  const morningMilk = morningRows.reduce((s, e) => s + Number(e.qty || 0), 0);
+  const eveningMilk = eveningRows.reduce((s, e) => s + Number(e.qty || 0), 0);
+  const morningAmount = morningRows.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const eveningAmount = eveningRows.reduce((s, e) => s + Number(e.amount || 0), 0);
+
+  html += `
+    <tr>
+      <th>Total</th>
+      <th colspan="5">Morning: ${money(morningMilk)} L / ₹${money(morningAmount)}</th>
+      <th colspan="5">Evening: ${money(eveningMilk)} L / ₹${money(eveningAmount)}</th>
+      <th>₹${money(milkAmount)}</th>
+    </tr>
+    </table>`;
+
+  for (const [type, title] of [
+    ['Pay', 'Advance Paid'],
+    ['Receive', 'Advance Received']
+  ]) {
+    const list = advances.filter(a => a.type === type);
+
+    html += `<h3>${title}</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="6">
+      <tr><th>Date</th><th>Amount</th><th>Remark</th></tr>`;
+
+    list.forEach(a => {
+      html += `<tr>
+        <td>${dateLabel(a.date)}</td>
+        <td>₹${money(a.amount)}</td>
+        <td>${escapeHtml(a.remark || '-')}</td>
+      </tr>`;
+    });
+
+    html += `<tr>
+      <th>Total</th>
+      <th>₹${money(type === 'Pay' ? paid : received)}</th>
+      <th></th>
+    </tr></table>`;
+  }
+
+  html += '</div>';
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  return wrapper.firstElementChild;
+}
+
+async function downloadCustomerMilkPDF() {
+  const area = customerMilkPDFHTML();
+  if (!area) return;
+
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library load nahi hui!');
+    return;
+  }
+
+  const oldStyle = area.getAttribute('style') || '';
+
+  area.style.width = '277mm';
+  area.style.maxWidth = 'none';
+  area.style.margin = '0';
+  area.style.padding = '8px';
+  area.style.boxSizing = 'border-box';
+
+  document.body.appendChild(area);
+
+  try {
+    await html2pdf().set({
+      margin: [5, 5, 5, 5],
+      filename: 'Customer_Milk_Bill.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: 1100,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'landscape'
+      },
+      pagebreak: {
+        mode: ['css', 'legacy']
+      }
+    }).from(area).save();
+  } catch (error) {
+    console.error(error);
+    alert('PDF banane mein dikkat aayi.');
+  } finally {
+    area.remove();
+    area.setAttribute('style', oldStyle);
+  }
+}
+
+async function shareCustomerMilkPDF() {
+  const area = customerMilkPDFHTML();
+  if (!area) return;
+
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library load nahi hui!');
+    return;
+  }
+
+  try {
+    const blob = await html2pdf().set({
+      margin: 5,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    }).from(area).outputPdf('blob');
+
+    const file = new File([blob], 'Customer_Milk_Bill.pdf', { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({files: [file]})) {
+      await navigator.share({ files: [file], title: 'Customer Milk Bill' });
+    } else {
+      alert('Is Preview mein direct sharing available nahi hai. PDF download karein.');
+      await downloadCustomerMilkPDF();
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      alert('PDF share nahi ho payi. Download PDF use karein.');
+    }
+  }
+}
+
+function downloadTotalCollectionPDF() {
+  const element = $('#totalCollectionPrintArea');
+  if (!element) return;
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library load nahi hui!');
+    return;
+  }
+  html2pdf().set({
+    margin: 10,
+    filename: 'Milk_Collection_Report.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).save();
+}
+
+function printTotalCollection() {
+  const element = $('#totalCollectionPrintArea');
+  if (!element) return;
+  const win = window.open('', '_blank');
+  if (!win) { alert('Popup blocked! Browser mein pop-ups allow karein.'); return; }
+  win.document.write('<!DOCTYPE html><html><head><title>Milk Collection</title><style>body{font-family:Arial;padding:15px;color:black;}</style></head><body>' + element.innerHTML + '</body></html>');
+  win.document.close();
+  win.setTimeout(() => { win.focus(); win.print(); }, 500);
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function escapeAttr(str) {
+  return String(str || '').replace(/'/g, "\\'");
+}
+
+window.onload = function() {
+  loadSettings();
+  renderRateSlots();
+  renderRateChartTable();
+  updateCustomerOptions();
+  dashboard();
+  renderMilkEntries();
+  renderAdvances();
+  populateReportCustomers();
+  toggleReportCustomer();
+  const savedChart = localStorage.getItem('rajput_rate_chart') || 'Only Fat';
+  updateMilkQualityInput(savedChart);
+  const radio = document.querySelector(`input[name="rateBasedOn"][value="${savedChart}"]`);
+  if (radio) radio.checked = true;
+};
+</script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyARzX0WPAL0_wkd9czho9JgCSED6E56Nq4",
+  authDomain: "rajput-dairy-milk.firebaseapp.com",
+  projectId: "rajput-dairy-milk",
+  storageBucket: "rajput-dairy-milk.firebasestorage.app",
+  messagingSenderId: "151969374499",
+  appId: "1:151969374499:web:ac68ec183a290e6c822c96"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const dairyAuth = firebase.auth();
+window.dairyLogout = function() {
+  dairyAuth.signOut().catch(error => {
+    alert('Logout Error: ' + error.message);
+  });
+};
+
+const dairyDB = firebase.firestore();
+</script>
+
+<div id="rajputLoginBox" style="display:flex;position:fixed;inset:0;z-index:99999;background:#f3f7f4;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;padding:25px;border-radius:16px;max-width:360px;width:100%;text-align:center;">
+    <h2 style="color:#168348;">Rajput Dairy Milk</h2>
+    <p>मोबाइल नंबर से लॉगिन करें</p>
+
+    <input id="rajputPhone" type="tel" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10"
+      style="width:100%;padding:14px;margin:10px 0;border:1px solid #ccc;border-radius:8px;">
+    <div id="recaptcha-container"></div>
+    <button id="rajputSendOtp" type="button"
+      style="width:100%;padding:14px;background:#168348;color:white;border:0;border-radius:8px;">
+      OTP भेजें
+    </button>
+
+    <input id="rajputOtp" type="text" placeholder="6 अंकों का OTP" maxlength="6"
+      style="display:none;width:100%;padding:14px;margin:10px 0;border:1px solid #ccc;border-radius:8px;">
+
+    <button id="rajputVerifyOtp" type="button"
+      style="display:none;width:100%;padding:14px;background:#168348;color:white;border:0;border-radius:8px;">
+      OTP Verify करें
+    </button>
+
+    <p id="rajputLoginMsg" style="color:#d00;margin-top:12px;"></p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const box = document.getElementById('rajputLoginBox');
+  const phone = document.getElementById('rajputPhone');
+  const otp = document.getElementById('rajputOtp');
+  const sendBtn = document.getElementById('rajputSendOtp');
+  const verifyBtn = document.getElementById('rajputVerifyOtp');
+  const msg = document.getElementById('rajputLoginMsg');
+
+  let confirmationResult = null;
+  let recaptchaVerifier = null;
+
+  dairyAuth.onAuthStateChanged(function(user) {
+    box.style.display = user ? 'none' : 'flex';
+    if (user) {
+  dairyCloudReady = false;
+
+  loadDairyCloudData().then(function (loaded) {
+    if (loaded === true) {
+      dairyCloudReady = true;
+      console.log('Cloud sync ready for UID:', user.uid);
+    } else {
+      dairyCloudReady = false;
+      console.error('Cloud data load confirm nahi hua; save rok diya gaya.');
+    }
+  }).catch(function (error) {
+    dairyCloudReady = false;
+    console.error('Cloud load failed:', error);
+  });
+} else {
+  dairyCloudReady = false;
+}
+  });
+
+  sendBtn.addEventListener('click', async function() {
+    const number = phone.value.trim();
+
+    if (!/^[6-9]\d{9}$/.test(number)) {
+      msg.textContent = 'सही 10 अंकों का मोबाइल नंबर डालें।';
+      return;
+    }
+
+    try {
+      sendBtn.disabled = true;
+      msg.textContent = 'OTP भेजा जा रहा है...';
+
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+          'recaptcha-container',
+          { size: 'normal' }
+        );
+        await recaptchaVerifier.render();
+      }
+
+      confirmationResult = await dairyAuth.signInWithPhoneNumber(
+        '+91' + number,
+        recaptchaVerifier
+      );
+
+      otp.style.display = 'block';
+      verifyBtn.style.display = 'block';
+      msg.textContent = 'OTP भेज दिया गया है।';
+    } catch (error) {
+      msg.textContent = 'OTP Error: ' + error.message;
+      sendBtn.disabled = false;
+    }
+  });
+
+  verifyBtn.addEventListener('click', async function() {
+    try {
+      verifyBtn.disabled = true;
+      msg.textContent = 'OTP जाँचा जा रहा है...';
+      await confirmationResult.confirm(otp.value.trim());
+      msg.textContent = 'लॉगिन सफल!';
+    } catch (error) {
+      msg.textContent = 'OTP Error: ' + error.message;
+      verifyBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
